@@ -1,0 +1,4191 @@
+{
+    "openapi": "3.0.0",
+    "x-origin": [
+        {
+            "url": "http://localhost:3000/",
+            "format": "swagger",
+            "version": "2.0",
+            "converter": {
+                "url": "https://github.com/mermade/oas-kit",
+                "version": "7.0.8"
+            }
+        }
+    ],
+    "info": {
+        "description": "",
+        "title": "standard public schema",
+        "version": "13.0.4"
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "summary": "OpenAPI description (this document)",
+                "tags": [
+                    "Introspection"
+                ]
+            }
+        },
+        "/classes": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/classes"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/classes"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/classes"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/classes"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "classes"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/classes"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "classes"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "classes"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/classes"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "classes"
+                ]
+            }
+        },
+        "/enemy_drops": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemy_drops"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemy_drops"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemy_drops"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemy_drops"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "enemy_drops"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/enemy_drops"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "enemy_drops"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "enemy_drops"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/enemy_drops"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "enemy_drops"
+                ]
+            }
+        },
+        "/backgrounds": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/backgrounds"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/backgrounds"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/backgrounds"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/backgrounds"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "backgrounds"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/backgrounds"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "backgrounds"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "backgrounds"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/backgrounds"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "backgrounds"
+                ]
+            }
+        },
+        "/abilities": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.damage"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.mana_cost"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.cooldown"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_item"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/abilities"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/abilities"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/abilities"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/abilities"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "abilities"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/abilities"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "abilities"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.damage"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.mana_cost"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.cooldown"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_item"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "abilities"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.damage"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.mana_cost"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.cooldown"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_item"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.required_quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.abilities.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/abilities"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "abilities"
+                ]
+            }
+        },
+        "/character_skills": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.skill_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/character_skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/character_skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/character_skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/character_skills"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "character_skills"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/character_skills"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "character_skills"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.skill_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "character_skills"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.skill_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.character_skills.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/character_skills"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "character_skills"
+                ]
+            }
+        },
+        "/skills": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.base_power"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/skills"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/skills"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "skills"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/skills"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "skills"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.base_power"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "skills"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.skills.base_power"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/skills"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "skills"
+                ]
+            }
+        },
+        "/characters": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.ancestry"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.background"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.class_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.gold"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.created_at"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/characters"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/characters"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/characters"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/characters"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "characters"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/characters"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "characters"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.ancestry"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.background"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.class_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.gold"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.created_at"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "characters"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.ancestry"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.background"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.class_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.level"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.gold"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.experience"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.created_at"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/characters"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "characters"
+                ]
+            }
+        },
+        "/ancestries": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.base_size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/ancestries"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/ancestries"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/ancestries"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/ancestries"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "ancestries"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ancestries"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "ancestries"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.base_size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "ancestries"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_speed"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.base_size"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_strength"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_dexterity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_intelligence"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_charisma"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_wisdom"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_constitution"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ancestries"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "ancestries"
+                ]
+            }
+        },
+        "/inventory": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.equipped"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/inventory"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/inventory"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/inventory"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/inventory"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "inventory"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/inventory"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "inventory"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.equipped"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "inventory"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.character_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.item_id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.equipped"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.inventory.quantity"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/inventory"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "inventory"
+                ]
+            }
+        },
+        "/enemies": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.path"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.step"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemies"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemies"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemies"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/enemies"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "enemies"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/enemies"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "enemies"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.path"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.step"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "enemies"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.health"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.path"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.step"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.enemies.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/enemies"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "enemies"
+                ]
+            }
+        },
+        "/items": {
+            "get": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.type"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.weight"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/order"
+                    },
+                    {
+                        "$ref": "#/components/parameters/range"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rangeUnit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferCount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/items"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json;nulls=stripped": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/items"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "application/vnd.pgrst.object+json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/items"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/items"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content"
+                    }
+                },
+                "tags": [
+                    "items"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/select"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferPost"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/items"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "tags": [
+                    "items"
+                ]
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.type"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.weight"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "items"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.id"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.name"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.description"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.type"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.weight"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.items.image"
+                    },
+                    {
+                        "$ref": "#/components/parameters/preferReturn"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/items"
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "tags": [
+                    "items"
+                ]
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "PostgREST Documentation",
+        "url": "https://postgrest.org/en/v\"13\"/references/api.html"
+    },
+    "servers": [
+        {
+            "url": "http://0.0.0.0:3000"
+        }
+    ],
+    "components": {
+        "parameters": {
+            "preferParams": {
+                "name": "Prefer",
+                "description": "Preference",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string",
+                    "enum": []
+                }
+            },
+            "preferReturn": {
+                "name": "Prefer",
+                "description": "Preference",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "return=representation",
+                        "return=minimal",
+                        "return=none"
+                    ]
+                }
+            },
+            "preferCount": {
+                "name": "Prefer",
+                "description": "Preference",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "count=none"
+                    ]
+                }
+            },
+            "preferPost": {
+                "name": "Prefer",
+                "description": "Preference",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "return=representation",
+                        "return=minimal",
+                        "return=none",
+                        "resolution=ignore-duplicates",
+                        "resolution=merge-duplicates"
+                    ]
+                }
+            },
+            "select": {
+                "name": "select",
+                "description": "Filtering Columns",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "on_conflict": {
+                "name": "on_conflict",
+                "description": "On Conflict",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "order": {
+                "name": "order",
+                "description": "Ordering",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "range": {
+                "name": "Range",
+                "description": "Limiting and Pagination",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rangeUnit": {
+                "name": "Range-Unit",
+                "description": "Limiting and Pagination",
+                "required": false,
+                "in": "header",
+                "schema": {
+                    "type": "string",
+                    "default": "items"
+                }
+            },
+            "offset": {
+                "name": "offset",
+                "description": "Limiting and Pagination",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "limit": {
+                "name": "limit",
+                "description": "Limiting and Pagination",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_speed": {
+                "name": "bonus_speed",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_health": {
+                "name": "bonus_health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_mana": {
+                "name": "bonus_mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_strength": {
+                "name": "bonus_strength",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_dexterity": {
+                "name": "bonus_dexterity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_intelligence": {
+                "name": "bonus_intelligence",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_charisma": {
+                "name": "bonus_charisma",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_wisdom": {
+                "name": "bonus_wisdom",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_constitution": {
+                "name": "bonus_constitution",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.classes.bonus_skill": {
+                "name": "bonus_skill",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemy_drops.enemy_id": {
+                "name": "enemy_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemy_drops.item_id": {
+                "name": "item_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemy_drops.drop_chance": {
+                "name": "drop_chance",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_speed": {
+                "name": "bonus_speed",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_health": {
+                "name": "bonus_health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_mana": {
+                "name": "bonus_mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_strength": {
+                "name": "bonus_strength",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_dexterity": {
+                "name": "bonus_dexterity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_intelligence": {
+                "name": "bonus_intelligence",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_charisma": {
+                "name": "bonus_charisma",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_wisdom": {
+                "name": "bonus_wisdom",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_constitution": {
+                "name": "bonus_constitution",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.bonus_skill": {
+                "name": "bonus_skill",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.damage": {
+                "name": "damage",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.range": {
+                "name": "range",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.mana_cost": {
+                "name": "mana_cost",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.cooldown": {
+                "name": "cooldown",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.required_skill": {
+                "name": "required_skill",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.required_level": {
+                "name": "required_level",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.required_item": {
+                "name": "required_item",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.required_quantity": {
+                "name": "required_quantity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.abilities.image": {
+                "name": "image",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.character_skills.character_id": {
+                "name": "character_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.character_skills.skill_id": {
+                "name": "skill_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.character_skills.level": {
+                "name": "level",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.character_skills.experience": {
+                "name": "experience",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.skills.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.skills.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.skills.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.skills.base_power": {
+                "name": "base_power",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.ancestry": {
+                "name": "ancestry",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.background": {
+                "name": "background",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.class_id": {
+                "name": "class_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.level": {
+                "name": "level",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.gold": {
+                "name": "gold",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.speed": {
+                "name": "speed",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.size": {
+                "name": "size",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.experience": {
+                "name": "experience",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.health": {
+                "name": "health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.mana": {
+                "name": "mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.longitude": {
+                "name": "longitude",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.latitude": {
+                "name": "latitude",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.strength": {
+                "name": "strength",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.dexterity": {
+                "name": "dexterity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.intelligence": {
+                "name": "intelligence",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.charisma": {
+                "name": "charisma",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.wisdom": {
+                "name": "wisdom",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.constitution": {
+                "name": "constitution",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.created_at": {
+                "name": "created_at",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_speed": {
+                "name": "bonus_speed",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_health": {
+                "name": "bonus_health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_mana": {
+                "name": "bonus_mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.base_size": {
+                "name": "base_size",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_strength": {
+                "name": "bonus_strength",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_dexterity": {
+                "name": "bonus_dexterity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_intelligence": {
+                "name": "bonus_intelligence",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_charisma": {
+                "name": "bonus_charisma",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_wisdom": {
+                "name": "bonus_wisdom",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_constitution": {
+                "name": "bonus_constitution",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.ancestries.bonus_skill": {
+                "name": "bonus_skill",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.inventory.character_id": {
+                "name": "character_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.inventory.item_id": {
+                "name": "item_id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.inventory.equipped": {
+                "name": "equipped",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.inventory.quantity": {
+                "name": "quantity",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.health": {
+                "name": "health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.mana": {
+                "name": "mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.experience_reward": {
+                "name": "experience_reward",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.latitude": {
+                "name": "latitude",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.longitude": {
+                "name": "longitude",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.path": {
+                "name": "path",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.step": {
+                "name": "step",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.enemies.image": {
+                "name": "image",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.id": {
+                "name": "id",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.name": {
+                "name": "name",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.description": {
+                "name": "description",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.type": {
+                "name": "type",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.weight": {
+                "name": "weight",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.items.image": {
+                "name": "image",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            }
+        },
+        "requestBodies": {
+            "enemies": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemies"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemies"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemies"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemies"
+                        }
+                    }
+                },
+                "description": "enemies"
+            },
+            "items": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/items"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/items"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/items"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/items"
+                        }
+                    }
+                },
+                "description": "items"
+            },
+            "character_skills": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/character_skills"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/character_skills"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/character_skills"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/character_skills"
+                        }
+                    }
+                },
+                "description": "character_skills"
+            },
+            "skills": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/skills"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/skills"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/skills"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/skills"
+                        }
+                    }
+                },
+                "description": "skills"
+            },
+            "backgrounds": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/backgrounds"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/backgrounds"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/backgrounds"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/backgrounds"
+                        }
+                    }
+                },
+                "description": "backgrounds"
+            },
+            "classes": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/classes"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/classes"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/classes"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/classes"
+                        }
+                    }
+                },
+                "description": "classes"
+            },
+            "characters": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/characters"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/characters"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/characters"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/characters"
+                        }
+                    }
+                },
+                "description": "characters"
+            },
+            "ancestries": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ancestries"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ancestries"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ancestries"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ancestries"
+                        }
+                    }
+                },
+                "description": "ancestries"
+            },
+            "enemy_drops": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemy_drops"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemy_drops"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemy_drops"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/enemy_drops"
+                        }
+                    }
+                },
+                "description": "enemy_drops"
+            },
+            "abilities": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/abilities"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/abilities"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/abilities"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/abilities"
+                        }
+                    }
+                },
+                "description": "abilities"
+            },
+            "inventory": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/inventory"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json;nulls=stripped": {
+                        "schema": {
+                            "$ref": "#/components/schemas/inventory"
+                        }
+                    },
+                    "application/vnd.pgrst.object+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/inventory"
+                        }
+                    },
+                    "text/csv": {
+                        "schema": {
+                            "$ref": "#/components/schemas/inventory"
+                        }
+                    }
+                },
+                "description": "inventory"
+            }
+        },
+        "schemas": {
+            "classes": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "bonus_speed": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_health": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_mana": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_strength": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_dexterity": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_intelligence": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_charisma": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_wisdom": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_constitution": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_skill": {
+                        "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "enemy_drops": {
+                "required": [
+                    "enemy_id",
+                    "item_id"
+                ],
+                "properties": {
+                    "enemy_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `enemies.id`.<fk table='enemies' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "item_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `items.id`.<fk table='items' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "drop_chance": {
+                        "default": 1,
+                        "format": "double precision",
+                        "type": "number"
+                    }
+                },
+                "type": "object"
+            },
+            "backgrounds": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "bonus_speed": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_health": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_mana": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_strength": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_dexterity": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_intelligence": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_charisma": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_wisdom": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_constitution": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_skill": {
+                        "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "abilities": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "damage": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "range": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "mana_cost": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "cooldown": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "required_skill": {
+                        "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "required_level": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "required_item": {
+                        "description": "Note:\nThis is a Foreign Key to `items.id`.<fk table='items' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "required_quantity": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "image": {
+                        "format": "text",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "character_skills": {
+                "required": [
+                    "character_id",
+                    "skill_id"
+                ],
+                "properties": {
+                    "character_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `characters.id`.<fk table='characters' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "skill_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "level": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "experience": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "skills": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "base_power": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "characters": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "ancestry": {
+                        "description": "Note:\nThis is a Foreign Key to `ancestries.id`.<fk table='ancestries' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "background": {
+                        "description": "Note:\nThis is a Foreign Key to `backgrounds.id`.<fk table='backgrounds' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "class_id": {
+                        "description": "Note:\nThis is a Foreign Key to `classes.id`.<fk table='classes' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "level": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "gold": {
+                        "default": 0,
+                        "format": "bigint",
+                        "type": "integer"
+                    },
+                    "speed": {
+                        "default": 30,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "size": {
+                        "default": "small",
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "experience": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "health": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "mana": {
+                        "default": 5,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "longitude": {
+                        "format": "double precision",
+                        "type": "number"
+                    },
+                    "latitude": {
+                        "format": "double precision",
+                        "type": "number"
+                    },
+                    "strength": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "dexterity": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "intelligence": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "charisma": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "wisdom": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "constitution": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "default": "now()",
+                        "format": "timestamp with time zone",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ancestries": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "bonus_speed": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_health": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_mana": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "base_size": {
+                        "default": "small",
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "bonus_strength": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_dexterity": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_intelligence": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_charisma": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_wisdom": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_constitution": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "bonus_skill": {
+                        "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "inventory": {
+                "required": [
+                    "character_id",
+                    "item_id"
+                ],
+                "properties": {
+                    "character_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `characters.id`.<fk table='characters' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "item_id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `items.id`.<fk table='items' column='id'/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "equipped": {
+                        "default": false,
+                        "format": "boolean",
+                        "type": "boolean"
+                    },
+                    "quantity": {
+                        "default": 1,
+                        "format": "integer",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "enemies": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "health": {
+                        "default": 5,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "mana": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "experience_reward": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "latitude": {
+                        "format": "double precision",
+                        "type": "number"
+                    },
+                    "longitude": {
+                        "format": "double precision",
+                        "type": "number"
+                    },
+                    "path": {
+                        "format": "jsonb"
+                    },
+                    "step": {
+                        "default": 0,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "image": {
+                        "format": "text",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "items": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Note:\nThis is a Primary Key.<pk/>",
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "description": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "type": {
+                        "format": "text",
+                        "type": "string"
+                    },
+                    "weight": {
+                        "default": 1,
+                        "format": "double precision",
+                        "type": "number"
+                    },
+                    "image": {
+                        "format": "text",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    }
+}
