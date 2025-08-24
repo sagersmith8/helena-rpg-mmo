@@ -642,6 +642,39 @@ export default function App() {
         ref={mapRef}
         region={region}
         style={styles.map}
+          customMapStyle={[
+            {
+              "elementType": "geometry",
+              "stylers": [{ "color": "#d2b48c" }] // parchment background
+            },
+            {
+              "elementType": "labels",
+              "stylers": [{ "visibility": "on" }]
+            },
+            {
+              "featureType": "water",
+              "elementType": "geometry",
+              "stylers": [{ "color": "#a3c1ad" }] // faded bluish-green rivers/lakes
+            },
+            {
+              "featureType": "road",
+              "elementType": "geometry",
+              "stylers": [
+                { "color": "#000000" }, // tan paths
+                { "weight": 2 }
+              ]
+            },
+            {
+              "featureType": "landscape.natural",
+              "elementType": "geometry",
+              "stylers": [{ "color": "#c9c68d" }] // hills/mountains
+            },
+            {
+              "featureType": "poi.park",
+              "elementType": "geometry",
+              "stylers": [{ "color": "#8cae68" }] // forests
+            }
+          ]}
         provider={PROVIDER_GOOGLE}
         scrollEnabled={false}
         zoomEnabled={false}
