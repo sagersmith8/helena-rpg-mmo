@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView, TextInput, FlatList, Image } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE, Circle, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import Api from "Api.tsx"
 import * as SecureStore from 'expo-secure-store';
 import GoblinIcon from "./assets/icons/svg/goblin.svg";
 import Knapsack from "./assets/icons/svg/knapsack.svg";
 import AbdominalArmor from "./assets/icons/svg/abdominal-armor.svg";
-import SwordInStone from "./assets/icons/svg/swords-emblem.svg";
+import SwordInStone from "./assets/icons/svg/battle-gear.svg";
+import Lyre from "./assets/icons/svg/lyre.svg";
 
 import { AbilitiesApi, Abilities, AncestriesApi, Ancestries, CharactersApi, Characters, CharacterSkillsApi, CharacterSkills, Configuration, ClassesApi, Classes, BackgroundsApi, Backgrounds, InventoryApi, Inventory, ItemsApi, Items, SkillsApi, Skills} from './api/index';
 
@@ -19,6 +20,8 @@ type Goblin = {
   step: number;
   health: number;
   ac: number;
+  speed: number;
+  perception: number;
 };
 
 const generateCirclePoints = (lat: number, lng: number, radiusMeters: number, numPoints: number) => {
@@ -41,6 +44,8 @@ const generateCirclePoints = (lat: number, lng: number, radiusMeters: number, nu
 };
 
 export default function App() {
+  const mapRef = useRef(null);
+  const [region, setRegion] = useState(null);
   const [isAncestryCollapsed, setAncestryCollapsed] = useState(true);
   const [isBackgroundCollapsed, setBackgroundCollapsed] = useState(true);
   const [isClassCollapsed, setClassCollapsed] = useState(true);
@@ -89,6 +94,29 @@ export default function App() {
   const [targetedEnemy, setTargetedEnemy] = useState<number | null>(null);
 
   const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([]);
+
+  useEffect(() => {
+      if (location && character) {
+        const lat = location.coords.latitude;
+        const lng = location.coords.longitude;
+
+          const perception = character.intelligence + character.wisdom;
+          // Higher perception → wider view
+          const zoomFactor = Math.max(0.0003, 0.003 - perception * 0.0003);
+
+        const newRegion = {
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: zoomFactor,
+          longitudeDelta: zoomFactor,
+        };
+
+        setRegion(newRegion);
+
+        // Animate camera so it feels smooth
+        mapRef.current?.animateToRegion(newRegion, 500);
+      }
+    }, [location, character]);
 
 
     function calculateSkills() {
@@ -163,16 +191,6 @@ export default function App() {
         return 10 + (ancestry?.bonusIntelligence ?? 0) + (background?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0);
     }
 
-    function calculateMapZoom() {
-      const perception = character.intelligence + character.wisdom;
-      // Higher perception → wider view
-      const zoomFactor = Math.max(0.0003, 0.003 - perception * 0.0003);
-      return {
-        latitudeDelta: zoomFactor,
-        longitudeDelta: zoomFactor,
-      };
-    }
-
     const abilityFunctions = {
         "Dig": () => {
             const item = items.find(item => item.name === "Rock")
@@ -220,9 +238,20 @@ export default function App() {
                 { lat: goblin.latitude, lon: goblin.longitude }
             ) * 0.3048; // feet → meters?
 
-            const roll = Math.floor(Math.random() * 20) + 1 + (character.strengthModifier ?? 0);
-            const hit = distance <= character.speed && roll >= (goblin.ac ?? 0); // Check if within range and hit
-            const damage = hit ? (character.strength ?? 0) + (punch?.damage ?? 0) : 0;
+            const strengthModifier = Math.ceil((character.strength ?? 0) - 10) / 2; // Base damage calculation
+            const inRange = distance - (character.speed + punch?.range) <= 0;
+            if (!inRange) {
+                console.warn("Target is out of range for Punch action");
+                return;
+            }
+            var damage = 0;
+            for (let i = 0; i < (punch?.hits ?? 1); i++) {
+                const hitRoll = Math.floor(Math.random() * 20) + 1 + (strengthModifier ?? 0);
+                if (hitRoll >= (goblin.ac ?? 0)) {
+                    const damageRoll = Math.floor(Math.random() * punch?.damage) + 1; // Roll a d6 for damage
+                    damage += damageRoll;
+                }
+            }
 
             if (damage >= (goblin.health ?? 0)) {
                 setGoblins(prev => prev.filter(g => g.id !== goblin.id));
@@ -387,6 +416,8 @@ export default function App() {
           step: idx,
           health: Math.floor(Math.random() * 10) + 5, // Random health between 5 and 15
           ac: Math.floor(Math.random() * 2) + 3, // Random AC between 3 and 5
+          speed: 30 + Math.floor(Math.random() * 10), // Random speed between 30 and 40
+          perception: 50 + Math.floor(Math.random() * 50), // Random perception between 50 and 100
         }));
 
         setGoblins(goblinSpawns);
@@ -608,22 +639,30 @@ export default function App() {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
+        region={region}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        initialRegion={{
-          latitude,
-          longitude,
-          ...calculateMapZoom(),
-        }}
         scrollEnabled={false}
         zoomEnabled={false}
         rotateEnabled={false}
         showsUserLocation={true}
-        followsUserLocation={true}
       >
+        <Marker
+          coordinate={{ latitude, longitude }}
+          title={character.name}
+          description={`Level: ${character.level}`}
+          onPress={() => setTargetedEnemy(null)} // Deselect goblin on character marker press
+        >
+            <View style={{ width: 20, height: 20 }}>
+                <Lyre width={20} height={20}/>
+            </View>
+        </Marker>
         {goblins.map(g => (
           <Marker
               key={g.id}
+              title={`Goblin`}
+              description={`Level: 1 | Health: ${g.health} | AC: ${g.ac}`}
               coordinate={{ latitude: g.latitude, longitude: g.longitude }}
               onPress={() => setTargetedEnemy(g.id)}
             >
@@ -639,6 +678,49 @@ export default function App() {
               </View>
             </Marker>
         ))}
+        {goblins.map(g => {
+          if (!location) return null;
+
+          // Quick haversine for distance in meters
+          const toRad = (x: number) => (x * Math.PI) / 180;
+          const R = 6371e3; // Earth radius in meters
+          const dLat = toRad(location.coords.latitude - g.latitude);
+          const dLon = toRad(location.coords.longitude - g.longitude);
+          const lat1 = toRad(g.latitude);
+          const lat2 = toRad(location.coords.latitude);
+
+          const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+
+          const canPerceive = distance <= g.perception;
+
+          return (
+            <Circle
+              key={g.id}
+              center={{
+                latitude: g.latitude,
+                longitude: g.longitude,
+              }}
+              radius={canPerceive ? g.speed : g.perception}
+              strokeWidth={2}
+              strokeColor={canPerceive ? "rgba(255,0,0,0.6)" : "rgba(0,0,255,0.6)"}
+              fillColor={canPerceive ? "rgba(255,0,0,0.2)" : "rgba(0,0,255,0.2)"}
+            />
+          );
+        })}
+        <Circle
+          center={{
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude
+          }}
+          radius={character.speed} // meters
+          strokeWidth={2}
+          strokeColor="rgba(255,0,0,0.6)"
+          fillColor="rgba(255,0,0,0.2)"
+        />
       </MapView>
       <View style={styles.statusHudContainer}>
            {/* HP Bar */}
