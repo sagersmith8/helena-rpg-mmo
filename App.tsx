@@ -12,7 +12,7 @@ import Lyre from "./assets/icons/svg/lyre.svg";
 
 import { AbilitiesApi, Abilities, AncestriesApi, Ancestries, CharactersApi, Characters, CharacterSkillsApi, CharacterSkills, Configuration, ClassesApi, Classes, BackgroundsApi, Backgrounds, InventoryApi, Inventory, ItemsApi, Items, SkillsApi, Skills} from './api/index';
 
-type Goblin = {
+type Enemy = {
   id: number;
   latitude: number;
   longitude: number;
@@ -22,6 +22,8 @@ type Goblin = {
   ac: number;
   speed: number;
   perception: number;
+  image: string;
+  inventory: number[];
 };
 
 const generateCirclePoints = (lat: number, lng: number, radiusMeters: number, numPoints: number) => {
@@ -49,8 +51,9 @@ export default function App() {
   const [isAncestryCollapsed, setAncestryCollapsed] = useState(true);
   const [isBackgroundCollapsed, setBackgroundCollapsed] = useState(true);
   const [isClassCollapsed, setClassCollapsed] = useState(true);
+  let subscription: Location.LocationSubscription | null = null;
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [goblins, setGoblins] = useState<Goblin[]>([]);
+  const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [isEquipmentOpen, setEquipmentOpen] = useState(false);
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [character, setCharacter] = useState<Characters | null>(null);
@@ -61,6 +64,10 @@ export default function App() {
   const [abilities, setAbilities] = useState({ strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 });
   const [feats, setFeats] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [floatingTexts, setFloatingTexts] = useState<
+    { id: string; lat: number; lng: number; text: string; color: string, expiresAt: number }[]
+  >([]);
+
 
   const imageHost = "http://10.46.235.105:4000/";
   //const config = new Configuration({basePath: 'https://postgrest.sageneilsmith.me'});
@@ -93,7 +100,7 @@ export default function App() {
 
   const [targetedEnemy, setTargetedEnemy] = useState<number | null>(null);
 
-  const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([]);
+  const [itemsOnMap, setItemsOnMap] = useState<{ id: number; lat: number; lng: number, itemId: number }[]>([]);
 
   useEffect(() => {
       if (location && character) {
@@ -118,6 +125,33 @@ export default function App() {
       }
     }, [location, character]);
 
+    function spawnItemOnMap(itemId: number, lat: number, lng: number) {
+        const id = Math.floor(Math.random() * 1000000);
+        setItemsOnMap(prev => [...prev, {id, itemId, lat, lng }]);
+    }
+
+    function addToInventory(itemOnMapId: number) {
+        const itemOnMap = itemsOnMap.find(i => i.id === itemOnMapId);
+        const existingItem = inventory.find(i => i.itemId === itemOnMap?.itemId);
+        if (existingItem) {
+            existingItem.quantity += 1;
+            setInventory([...inventory]);
+            inventoryApi.inventoryPatch({
+                inventory: existingItem,
+            }).catch(err => console.error("Failed to update inventory:", err));
+        } else {
+            const newItem: Inventory = {
+                characterId: character?.id ?? 0, // Use character ID if available
+                itemId: itemOnMap.itemId,
+                quantity: 1,
+            };
+            setInventory([...inventory, newItem]);
+            inventoryApi.inventoryPost({
+                inventory: newItem,
+            }).catch(err => console.error("Failed to add item to inventory:", err));
+        }
+        setItemsOnMap(prev => prev.filter(i => i.id !== itemOnMapId));
+    }
 
     function calculateSkills() {
       const bonusSkillIds = [
@@ -191,91 +225,237 @@ export default function App() {
         return 10 + (ancestry?.bonusIntelligence ?? 0) + (background?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0);
     }
 
+    async function spawnEnemy(latitude: number, longitude: number) {
+      try {
+        console.log("Spawning enemy...");
+        if (!latitude || !longitude) {
+            console.warn("No location available to spawn enemy");
+            return;
+        }
+        const radius = 100; // meters
+        const circlePoints = generateCirclePoints(
+          latitude,
+          longitude,
+          radius,
+          8
+        );
+
+        // Build OSRM request
+        const waypointString = circlePoints
+          .map(p => `${p.lng},${p.lat}`)
+          .join(";");
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${waypointString}?overview=full&geometries=geojson`
+        );
+        const data = await response.json();
+
+        if (!data.routes || data.routes.length === 0) {
+          console.warn("Failed to fetch route");
+          return;
+        }
+
+        const routeCoords = data.routes[0].geometry.coordinates.map(
+          ([lng, lat]: [number, number]) => ({
+            lat,
+            lng,
+          })
+        );
+
+        const rock = items.find(i => i.name === "Rock");
+
+        const id = Math.floor(Math.random() * 1000000);
+
+        const enemy = {
+          id,
+          latitude: routeCoords[0].lat,
+          longitude: routeCoords[0].lng,
+          path: routeCoords,
+          step: 0, // start at the beginning of the path
+          health: Math.floor(Math.random() * 10) + 5, // 5–15
+          ac: Math.floor(Math.random() * 2) + 3, // 3–5
+          speed: 30 + Math.floor(Math.random() * 10), // 30–40
+          perception: 50 + Math.floor(Math.random() * 50), // 50–100
+          image: "goblin.png",
+          inventory: rock ? [rock.id] : [], // safe guard
+        };
+
+        setEnemies(prev => [...prev, enemy]);
+      } catch (err) {
+        console.error("Failed to spawn enemy:", err);
+      }
+    }
+
+    function meleeAttack(ability: Abilities) {
+      console.log("Performing melee attack:", ability);
+      if (!targetedEnemy) {
+       setFloatingTexts(prev => [
+          ...prev,
+          {
+            id: `${Date.now()}`,
+            lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
+            lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+            text: "Miss!",
+            color: "gray",
+            expiresAt: Date.now() + 1000,
+          },
+        ]);
+        console.warn("No enemy targeted for melee attack");
+        return;
+      }
+
+      const enemy = enemies.find(e => e.id === targetedEnemy);
+      if (!enemy) {
+        setFloatingTexts(prev => [
+                 ...prev,
+                 {
+                   id: `${Date.now()}`,
+                   lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
+                   lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                   text: "Miss!",
+                   color: "gray",
+                   expiresAt: Date.now() + 1000,
+                 },
+               ]);
+        console.warn("Targeted enemy not found");
+        return;
+      }
+
+      // Distance (make sure getDistanceMeters returns meters!)
+      const distance = getDistanceMeters(
+        { lat: location.coords.latitude, lon: location.coords.longitude },
+        { lat: enemy.latitude, lon: enemy.longitude }
+      ) * 3.28084; // convert to feet
+
+      // D&D style strength modifier
+      const strengthModifier = Math.floor(((character.strength ?? 10) - 10) / 2);
+
+      // Range check
+      const range = (character.speed ?? 0) + (ability?.range ?? 0);
+      const inRange = distance <= range;
+
+      if (!inRange) {
+         setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${Date.now()}`,
+                lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
+                lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                text: "Miss!",
+                color: "gray",
+                expiresAt: Date.now() + 1000,
+              },
+            ]);
+        console.warn(`Target is out of range. Distance: ${distance.toFixed(2)}m, Range: ${range}m`);
+        return;
+      }
+
+      let damage = 0;
+      let anyHit = false;
+
+      console.log(
+        `Attacking enemy at ${distance.toFixed(2)}m with STR mod ${strengthModifier}, hits: ${ability?.hits ?? 1}`
+      );
+
+      for (let i = 0; i < (ability?.hits ?? 1); i++) {
+        const hitRoll = Math.floor(Math.random() * 20) + 1 + strengthModifier;
+        if (hitRoll >= (enemy.ac ?? 10)) {
+          const maxDamage = ability?.damage ?? 6;
+          const damageRoll = Math.floor(Math.random() * maxDamage) + 1;
+          console.log(`Hit! Rolled ${damageRoll} damage`);
+          damage += damageRoll;
+          anyHit = true;
+          setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${enemy.id}-${Date.now()}`, // unique
+                  lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001, // slight random offset
+                  lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                text: `-${damageRoll}`,
+                color: "red",
+                expiresAt: Date.now() + 1000, // 1 second
+              },
+            ]);
+        } else {
+          console.log("Missed!");
+           setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${enemy.id}-${Date.now()}`,
+              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
+              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                text: "Miss!",
+                color: "gray",
+                expiresAt: Date.now() + 1000, // 1 second
+              },
+            ]);
+        }
+      }
+
+      if (damage >= (enemy.health ?? 0)) {
+        console.log("Enemy defeated!");
+        setEnemies(prev => prev.filter(e => e.id !== enemy.id));
+        for (const itemId of enemy.inventory) {
+          spawnItemOnMap(
+            itemId,
+            enemy.latitude + (Math.random() - 0.5) * 0.001,
+            enemy.longitude + (Math.random() - 0.5) * 0.001
+          );
+        }
+      } else {
+        setEnemies(prev =>
+          prev.map(e =>
+            e.id === enemy.id ? { ...e, health: e.health - damage } : e
+          )
+        );
+      }
+
+      console.log(anyHit ? `Total damage dealt: ${damage}` : "All attacks missed!");
+    }
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setFloatingTexts(prev => prev.filter(ft => ft.expiresAt > Date.now()));
+      }, 200); // check ~5x/sec
+      return () => clearInterval(interval);
+    }, []);
+
     const abilityFunctions = {
         "Dig": () => {
             const item = items.find(item => item.name === "Rock")
-            const existingItem = inventory.find(i => i.itemId === item?.id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-                setInventory([...inventory]);
-                inventoryApi.inventoryPatch({
-                    inventory: existingItem,
-                }).catch(err => console.error("Failed to update inventory:", err));
-                return;
-            } else {
-                const newItem: Inventory = {
-                    characterId: character?.id ?? 0, // Use character ID if available
-                    itemId: item?.id ?? 0, // Use item ID if available
-                    quantity: 1,
-                };
-                setInventory([...inventory, newItem]);
-                inventoryApi.inventoryPost({
-                    inventory: newItem,
-                }).catch(err => console.error("Failed to add item to inventory:", err));
-            }
-            console.log("You dug up a rock!");
+            spawnItemOnMap(item.id, location.coords.latitude + (Math.random() - 0.5) * 0.001, location.coords.longitude + (Math.random() - 0.5) * 0.001);
+            setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${Date.now()}`,
+              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
+              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                text: "Dig!",
+                color: "purple",
+                expiresAt: Date.now() + 1000, // 1 second
+              },
+            ]);
         },
         "Gather Herbs": () => null, // Placeholder
         "Craft Item": () => null, // Placeholder
         "Punch": async () => {
-            if (targetedEnemy === null) {
-                console.warn("No enemy targeted for Punch action");
+            console.log("Attempting to punch...");
+            const ability = abilitiesList.find(ab => ab.name === "Punch");
+            if (!ability) {
+                console.warn("Punch ability not found");
                 return;
             }
-
-            const goblin = goblins.find(g => g.id === targetedEnemy);
-            if (!goblin) {
-                console.warn("Targeted goblin not found");
-                return;
-            }
-
-            const punch = abilitiesList.find(a => a.name === "Punch");
-            const location = await Location.getCurrentPositionAsync({});
-
-            // Note: location.coords.latitude / longitude
-            const distance = getDistanceMeters(
-                { lat: location.coords.latitude, lon: location.coords.longitude },
-                { lat: goblin.latitude, lon: goblin.longitude }
-            ) * 0.3048; // feet → meters?
-
-            const strengthModifier = Math.ceil((character.strength ?? 0) - 10) / 2; // Base damage calculation
-            const inRange = distance - (character.speed + punch?.range) <= 0;
-            if (!inRange) {
-                console.warn("Target is out of range for Punch action");
-                return;
-            }
-            var damage = 0;
-            for (let i = 0; i < (punch?.hits ?? 1); i++) {
-                const hitRoll = Math.floor(Math.random() * 20) + 1 + (strengthModifier ?? 0);
-                if (hitRoll >= (goblin.ac ?? 0)) {
-                    const damageRoll = Math.floor(Math.random() * punch?.damage) + 1; // Roll a d6 for damage
-                    damage += damageRoll;
-                }
-            }
-
-            if (damage >= (goblin.health ?? 0)) {
-                setGoblins(prev => prev.filter(g => g.id !== goblin.id));
-            } else {
-                setGoblins(prev =>
-                    prev.map(g => g.id === goblin.id ? { ...g, health: g.health - damage } : g)
-                );
-            }
-
-            console.log(hit ? `Hit! Damage: ${damage}` : "Missed!");
+            meleeAttack(ability);
         },
         "Kick": () => null, // Placeholder
         "Throw Rock": () => null, // Placeholder
     };
 
   useEffect(() => {
-      let intervalId: NodeJS.Timer;
-
       (async () => {
         const fetchClasses = async () => {
           try {
             const result = await classesApi.classesGet({}); // fully-typed GET request
             if (result) setCharacterClasses(result);
-            console.log("Fetched classes:", result);
           } catch (err) {
             console.error('Failed to fetch classes:', err);
           }
@@ -287,7 +467,6 @@ export default function App() {
           try {
             const result = await backgroundsApi.backgroundsGet({}); // fully-typed GET request
             if (result) setBackgrounds(result);
-            console.log("Fetched backgrounds:", result);
           } catch (err) {
             console.error('Failed to fetch backgrounds:', err);
           }
@@ -298,7 +477,6 @@ export default function App() {
           try {
             const result = await ancestriesApi.ancestriesGet({}); // fully-typed GET request
             if (result) setAncestries(result);
-            console.log("Fetched ancestries:", result);
           } catch (err) {
             console.error('Failed to fetch ancestries:', err);
           }
@@ -309,7 +487,6 @@ export default function App() {
           try {
             const result = await skillsApi.skillsGet({}); // fully-typed GET request
             if (result) setSkills(result);
-            console.log("Fetched skills:", result);
           } catch (err) {
             console.error('Failed to fetch skills:', err);
           }
@@ -322,7 +499,6 @@ export default function App() {
             if (result) {
                 setItems(result);
             }
-            console.log("Fetched items:", result);
           } catch (err) {
             console.error('Failed to fetch items:', err);
           }
@@ -333,7 +509,6 @@ export default function App() {
           try {
             const result = await abilitiesApi.abilitiesGet({}); // fully-typed GET request
             if (result) setAbilitiesList(result);
-            console.log("Fetched abilities:", result);
           } catch (err) {
             console.error('Failed to fetch abilities:', err);
           }
@@ -352,9 +527,6 @@ export default function App() {
                 limit: "1",     // just to be safe
               });
 
-              if (c && c.length > 0) {
-                console.log("Fetched character:", c[0]);
-              }
               const loadedCharacter = c[0] || null;
               setCharacter(loadedCharacter);
               if (loadedCharacter) {
@@ -362,13 +534,11 @@ export default function App() {
                     characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
                     limit: "100", // Adjust as needed
                 });
-                console.log("Fetched inventory:", loadedInventory);
                 setInventory(loadedInventory || []);
                 const loadedCharacterSkills = await characterSkillsApi.characterSkillsGet({
                     characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
                     limit: "100", // Adjust as needed
                 });
-                console.log("Fetched character skills:", loadedCharacterSkills);
                 setCharacterSkills(loadedCharacterSkills || []);
               }
 
@@ -384,81 +554,103 @@ export default function App() {
           return;
         }
 
+        const subscribeToLocation = async () => {
+            // Ask for permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+              console.warn("Permission to access location was denied");
+              return;
+            }
+
+            // Subscribe to updates
+            subscription = await Location.watchPositionAsync(
+              {
+                accuracy: Location.Accuracy.Highest,
+                timeInterval: 1000,   // ms between updates
+                distanceInterval: 1,  // meters moved before update
+              },
+              (loc) => {
+                setLocation(loc);
+              }
+            );
+          };
+        await subscribeToLocation();
         const loc = await Location.getCurrentPositionAsync({});
         setLocation(loc);
-
-        const radius = 100; //1609; // ~1 miles in meters
-        const circlePoints = generateCirclePoints(loc.coords.latitude, loc.coords.longitude, radius, 8); // 8 waypoints
-
-        // Build OSRM request
-        const waypointString = circlePoints.map(p => `${p.lng},${p.lat}`).join(";");
-        const response = await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${waypointString}?overview=full&geometries=geojson`
-        );
-        const data = await response.json();
-
-        if (!data.routes || data.routes.length === 0) {
-          console.warn("Failed to fetch route");
-          return;
-        }
-
-        const routeCoords = data.routes[0].geometry.coordinates.map(([lng, lat]: [number, number]) => ({
-          lat,
-          lng,
-        }));
-
-        // Spawn 3 goblins
-        const goblinSpawns = [0, 1, 2].map(idx => ({
-          id: idx,
-          latitude: routeCoords[0].lat,
-          longitude: routeCoords[0].lng,
-          path: routeCoords,
-          step: idx,
-          health: Math.floor(Math.random() * 10) + 5, // Random health between 5 and 15
-          ac: Math.floor(Math.random() * 2) + 3, // Random AC between 3 and 5
-          speed: 30 + Math.floor(Math.random() * 10), // Random speed between 30 and 40
-          perception: 50 + Math.floor(Math.random() * 50), // Random perception between 50 and 100
-        }));
-
-        setGoblins(goblinSpawns);
-
-        const smoothStepInterval = 100; // ms per micro-step
-        const microSteps = 20;          // number of interpolations per segment
-
-        intervalId = setInterval(() => {
-          setGoblins(prev =>
-            prev.map(g => {
-              const current = g.path[g.step];
-              const nextStep = (g.step + 1) % g.path.length;
-              const next = g.path[nextStep];
-
-              // Use microStep to calculate the interpolation factor
-              const interpolationFactor = (g.microStep ?? 0) / microSteps;
-
-              // Interpolate latitude and longitude
-              const microLat = current.lat + (next.lat - current.lat) * interpolationFactor;
-              const microLng = current.lng + (next.lng - current.lng) * interpolationFactor;
-
-              // Update microStep and step
-              const newMicroStep = (g.microStep ?? 0) + 1;
-              const newStep = newMicroStep >= microSteps ? nextStep : g.step;
-
-              return {
-                ...g,
-                latitude: microLat,
-                longitude: microLng,
-                step: newStep,
-                microStep: newMicroStep % microSteps,
-              };
-            })
-          );
-        }, smoothStepInterval);
       })();
+    }, []);
+
+    useEffect(() => {
+      if (!location || items.length === 0) {
+        console.log("Waiting for location and items to be available...");
+        return;
+      }
+
+      if (enemies.length === 0) {
+        console.log("Spawning initial enemies...");
+        spawnEnemy(
+            location.coords.latitude + (Math.random() - 0.5) * 0.001,
+            location.coords.longitude + (Math.random() - 0.5) * 0.001);
+      }
+
+    // Spawn enemies every 5 minutes
+    const enemySpawnTimer = setInterval(() => {
+      console.log("Spawning enemy timer triggered");
+      spawnEnemy(location.coords.latitude + (Math.random() - 0.5) * 0.001,
+                             location.coords.longitude + (Math.random() - 0.5) * 0.001); // pass latest location directly
+    }, 2 * 60 * 1000);
+
+      const smoothStepInterval = 50; // ms per micro-step
+      const microSteps = 100;
+
+      // Animate enemies
+      const enemyAnimTimer = setInterval(() => {
+        setEnemies(prev =>
+          prev.map(e => {
+            if (!e.path || e.path.length < 2) return e;
+
+            const current = e.path[e.step];
+            const nextStep = (e.step + 1) % e.path.length;
+            const next = e.path[nextStep];
+
+            const interpolationFactor = (e.microStep ?? 0) / microSteps;
+
+            const microLat =
+              current.lat + (next.lat - current.lat) * interpolationFactor;
+            const microLng =
+              current.lng + (next.lng - current.lng) * interpolationFactor;
+
+            const newMicroStep = (e.microStep ?? 0) + 1;
+            const newStep = newMicroStep >= microSteps ? nextStep : e.step;
+
+            return {
+              ...e,
+              latitude: microLat,
+              longitude: microLng,
+              step: newStep,
+              microStep: newMicroStep % microSteps,
+            };
+          })
+        );
+      }, smoothStepInterval);
+
+      // Spawn items every 2 minutes
+      const itemTimer = setInterval(() => {
+        console.log("Spawning item...");
+        const item = items[Math.floor(Math.random() * items.length)];
+        spawnItemOnMap(
+          item.id,
+          location.coords.latitude + (Math.random() - 0.5) * 0.001,
+          location.coords.longitude + (Math.random() - 0.5) * 0.001
+        );
+      }, 2 * 60 * 1000);
 
       return () => {
-        if (intervalId) clearInterval(intervalId);
+        clearInterval(enemyAnimTimer);
+        clearInterval(itemTimer);
+        clearInterval(enemySpawnTimer);
       };
-    }, []);
+    }, [location, items]);
 
     if (!character) {
         return (
@@ -679,47 +871,87 @@ export default function App() {
         scrollEnabled={false}
         zoomEnabled={false}
         rotateEnabled={false}
-        showsUserLocation={true}
+        showsUserLocation={false}
       >
+          {floatingTexts.map(ft => (
+            <Marker
+              key={ft.id}
+              coordinate={{ latitude: ft.lat, longitude: ft.lng }}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View
+                style={{
+                  backgroundColor: "white",
+                  padding: 2,
+                }}
+              >
+                <Text style={{ color: ft.color, fontWeight: "bold", fontSize: 12 }}>
+                  {ft.text}
+                </Text>
+              </View>
+            </Marker>
+          ))}
         <Marker
-          coordinate={{ latitude, longitude }}
+          coordinate={{
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude
+        }}
           title={character.name}
+          anchor={{ x: 0.3, y: 0.4 }}
           description={`Level: ${character.level}`}
-          onPress={() => setTargetedEnemy(null)} // Deselect goblin on character marker press
+          onPress={() => setTargetedEnemy(null)} // Deselect enemy on character marker press
         >
             <View style={{ width: 20, height: 20 }}>
                 <Lyre width={20} height={20}/>
             </View>
         </Marker>
-        {goblins.map(g => (
+        {itemsOnMap.map((item, index) => {
+            const itemData = items.find(i => i.id === item.itemId);
+            if (!itemData) return null;
+            return (
+                <Marker
+                    key={`item-${index}`}
+                    coordinate={{ latitude: item.lat, longitude: item.lng }}
+                    title={itemData.name}
+                    description={itemData.description}
+                    onPress={() => addToInventory(item.id)}
+                >
+                    <View style={{ width: 20, height: 20 }}>
+                        <Image source={{ uri: imageHost + itemData.image }} style={{ width: 20, height: 20 }} />
+                    </View>
+                </Marker>
+            );
+        })}
+        {enemies.map(e => (
           <Marker
-              key={g.id}
+              key={e.id}
               title={`Goblin`}
-              description={`Level: 1 | Health: ${g.health} | AC: ${g.ac}`}
-              coordinate={{ latitude: g.latitude, longitude: g.longitude }}
-              onPress={() => setTargetedEnemy(g.id)}
+              anchor={{ x: 0.3, y: 0.4 }}
+              description={`Level: 1 | Health: ${e.health} | AC: ${e.ac}`}
+              coordinate={{ latitude: e.latitude, longitude: e.longitude }}
+              onPress={() => setTargetedEnemy(e.id)}
             >
               <View style={{ width: 20, height: 20 }}>
                 <GoblinIcon
                   width={20}
                   height={20}
-                  fill={targetedEnemy === g.id ? "purple" : "black"}
+                  fill={targetedEnemy === e.id ? "purple" : "black"}
                   style={{
-                    transform: [{ scale: targetedEnemy === g.id ? 1.3 : 1 }],
+                    transform: [{ scale: targetedEnemy === e.id ? 1.3 : 1 }],
                   }}
                 />
               </View>
             </Marker>
         ))}
-        {goblins.map(g => {
+        {enemies.map(e => {
           if (!location) return null;
 
           // Quick haversine for distance in meters
           const toRad = (x: number) => (x * Math.PI) / 180;
           const R = 6371e3; // Earth radius in meters
-          const dLat = toRad(location.coords.latitude - g.latitude);
-          const dLon = toRad(location.coords.longitude - g.longitude);
-          const lat1 = toRad(g.latitude);
+          const dLat = toRad(location.coords.latitude - e.latitude);
+          const dLon = toRad(location.coords.longitude - e.longitude);
+          const lat1 = toRad(e.latitude);
           const lat2 = toRad(location.coords.latitude);
 
           const a =
@@ -728,19 +960,19 @@ export default function App() {
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
           const distance = R * c;
 
-          const canPerceive = distance <= g.perception;
+          const canPerceive = distance * 3.28084 <= e.perception ;
 
           return (
             <Circle
-              key={g.id}
+              key={e.id}
               center={{
-                latitude: g.latitude,
-                longitude: g.longitude,
+                latitude: e.latitude,
+                longitude: e.longitude,
               }}
-              radius={canPerceive ? g.speed : g.perception}
+              radius={canPerceive ? e.speed * 0.3048 : e.perception * 0.3048}
               strokeWidth={2}
               strokeColor={canPerceive ? "rgba(255,0,0,0.6)" : "rgba(0,0,255,0.6)"}
-              fillColor={canPerceive ? "rgba(255,0,0,0.2)" : "rgba(0,0,255,0.2)"}
+              fillColor={canPerceive ? "rgba(255,0,0,0.2)" : "rgba(0,0,255, 0.2)"}
             />
           );
         })}
@@ -749,10 +981,10 @@ export default function App() {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude
           }}
-          radius={character.speed} // meters
+          radius={character.speed * 0.3048} // meters
           strokeWidth={2}
-          strokeColor="rgba(255,0,0,0.6)"
-          fillColor="rgba(255,0,0,0.2)"
+          strokeColor="rgba(255,0,255,0.6)"
+          fillColor="rgba(255,0, 255, 0.2)"
         />
       </MapView>
       <View style={styles.statusHudContainer}>
@@ -835,6 +1067,7 @@ export default function App() {
             <ScrollView contentContainerStyle={styles.gridContainer}>
               {inventory.map((item, index) => {
                 const itemData = items.find((i) => i.id === item.itemId);
+                if (!itemData) return null;
                 return (
                   <TouchableOpacity style={styles.statBlock} key={item.itemId} onPress={() => {item.equipped = !item.equipped
                                                                                                setInventory([...inventory]);}}>
