@@ -12,17 +12,9 @@ import Lyre from "./assets/icons/svg/lyre.svg";
 
 import { AbilitiesApi, Abilities, AncestriesApi, Ancestries, CharactersApi, Characters, CharacterSkillsApi, CharacterSkills, Configuration, ClassesApi, Classes, BackgroundsApi, Backgrounds, InventoryApi, Inventory, ItemsApi, Items, SkillsApi, Skills} from './api/index';
 
-type Enemy = {
-  id: number;
-  latitude: number;
-  longitude: number;
+type Enemy = Characters & {
   path: { lat: number; lng: number }[];
   step: number;
-  health: number;
-  ac: number;
-  speed: number;
-  perception: number;
-  image: string;
   inventory: number[];
 };
 
@@ -285,15 +277,15 @@ export default function App() {
       }
     }
 
-    function meleeAttack(ability: Abilities) {
+    function meleeAttack(attacker: Characters, ability: Abilities, defender: Characters, isCharacterAttack: boolean) {
       console.log("Performing melee attack:", ability);
-      if (!targetedEnemy) {
+      if (!defender) {
        setFloatingTexts(prev => [
           ...prev,
           {
             id: `${Date.now()}`,
-            lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
-            lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+            lat: attacker.latitude + (Math.random() - 0.5) * 0.0001,
+            lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
             text: "Miss!",
             color: "gray",
             expiresAt: Date.now() + 1000,
@@ -303,14 +295,13 @@ export default function App() {
         return;
       }
 
-      const enemy = enemies.find(e => e.id === targetedEnemy);
-      if (!enemy) {
+      if (!defender) {
         setFloatingTexts(prev => [
                  ...prev,
                  {
                    id: `${Date.now()}`,
-                   lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
-                   lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                   lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
+                   lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
                    text: "Miss!",
                    color: "gray",
                    expiresAt: Date.now() + 1000,
@@ -322,8 +313,8 @@ export default function App() {
 
       // Distance (make sure getDistanceMeters returns meters!)
       const distance = getDistanceMeters(
-        { lat: location.coords.latitude, lon: location.coords.longitude },
-        { lat: enemy.latitude, lon: enemy.longitude }
+        { lat:  attacker.latitude, lon:  attacker.longitude },
+        { lat: defender.latitude, lon: defender.longitude }
       ) * 3.28084; // convert to feet
 
       // D&D style strength modifier
@@ -338,8 +329,8 @@ export default function App() {
               ...prev,
               {
                 id: `${Date.now()}`,
-                lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
-                lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
+                lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
                 text: "Miss!",
                 color: "gray",
                 expiresAt: Date.now() + 1000,
@@ -353,12 +344,12 @@ export default function App() {
       let anyHit = false;
 
       console.log(
-        `Attacking enemy at ${distance.toFixed(2)}m with STR mod ${strengthModifier}, hits: ${ability?.hits ?? 1}`
+        `Attacking defender at ${distance.toFixed(2)}m with STR mod ${strengthModifier}, hits: ${ability?.hits ?? 1}`
       );
 
       for (let i = 0; i < (ability?.hits ?? 1); i++) {
         const hitRoll = Math.floor(Math.random() * 20) + 1 + strengthModifier;
-        if (hitRoll >= (enemy.ac ?? 10)) {
+        if (hitRoll >= (defender.ac ?? 10)) {
           const maxDamage = ability?.damage ?? 6;
           const damageRoll = Math.floor(Math.random() * maxDamage) + 1;
           console.log(`Hit! Rolled ${damageRoll} damage`);
@@ -367,9 +358,9 @@ export default function App() {
           setFloatingTexts(prev => [
               ...prev,
               {
-                id: `${enemy.id}-${Date.now()}`, // unique
-                  lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001, // slight random offset
-                  lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                id: `${defender.id}-${Date.now()}`, // unique
+                  lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001, // slight random offset
+                  lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
                 text: `-${damageRoll}`,
                 color: "red",
                 expiresAt: Date.now() + 1000, // 1 second
@@ -380,9 +371,9 @@ export default function App() {
            setFloatingTexts(prev => [
               ...prev,
               {
-                id: `${enemy.id}-${Date.now()}`,
-              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
-              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+                id: `${defender.id}-${Date.now()}`,
+              lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
+              lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
                 text: "Miss!",
                 color: "gray",
                 expiresAt: Date.now() + 1000, // 1 second
@@ -391,22 +382,36 @@ export default function App() {
         }
       }
 
-      if (damage >= (enemy.health ?? 0)) {
-        console.log("Enemy defeated!");
-        setEnemies(prev => prev.filter(e => e.id !== enemy.id));
-        for (const itemId of enemy.inventory) {
-          spawnItemOnMap(
-            itemId,
-            enemy.latitude + (Math.random() - 0.5) * 0.001,
-            enemy.longitude + (Math.random() - 0.5) * 0.001
-          );
+      if (damage >= (defender.health ?? 0)) {
+        if (isCharacterAttack) {
+            console.log("Enemy defeated!");
+            setEnemies(prev => prev.filter(e => e.id !== defender.id));
+            for (const itemId of defender.inventory) {
+              spawnItemOnMap(
+                itemId,
+                defender.latitude + (Math.random() - 0.5) * 0.001,
+                defender.longitude + (Math.random() - 0.5) * 0.001
+              );
+            }
+        } else {
+            console.log("Character defeated!");
+            // Handle character defeat (e.g., respawn, lose items, etc.)
+            setCharacter(null);
+            saveCharacterId(null);
+            setEnemies([]);
+            setInventory([]);
+            setItemsOnMap([]);
         }
       } else {
-        setEnemies(prev =>
-          prev.map(e =>
-            e.id === enemy.id ? { ...e, health: e.health - damage } : e
-          )
-        );
+        if (isCharacterAttack) {
+            setEnemies(prev =>
+              prev.map(e =>
+                e.id === defender.id ? { ...e, health: e.health - damage } : e
+              )
+            );
+        } else {
+            setCharacter(prev => prev ? { ...prev, health: (prev.health ?? 10) - damage } : prev);
+        }
       }
 
       console.log(anyHit ? `Total damage dealt: ${damage}` : "All attacks missed!");
@@ -444,7 +449,8 @@ export default function App() {
                 console.warn("Punch ability not found");
                 return;
             }
-            meleeAttack(ability);
+            const enemy = enemies.find(e => e.id === targetedEnemy) ?? null;
+            meleeAttack(character, ability, enemy, true);
         },
         "Kick": () => null, // Placeholder
         "Throw Rock": () => null, // Placeholder
@@ -571,14 +577,49 @@ export default function App() {
               },
               (loc) => {
                 setLocation(loc);
+                setCharacter(prev => {
+                  if (!prev) return prev;
+                  return { ...prev, latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+                });
               }
             );
           };
         await subscribeToLocation();
         const loc = await Location.getCurrentPositionAsync({});
         setLocation(loc);
+        setCharacter(prev => {
+          if (!prev) return prev;
+          return { ...prev, latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+        });
       })();
     }, []);
+
+    const canSeeCharacter = (enemy: Enemy, character: Character) => {
+      const dist = getDistanceMeters(
+        { lat: enemy.latitude, lon: enemy.longitude },
+        { lat: character.latitude, lon: character.longitude }
+      );
+      return dist * 3.28084 <= (enemy.perception ?? 0);
+    };
+
+    function moveToward(enemy: Enemy, target: Character, stepSizeMeters: number): Enemy {
+      const dLat = target.latitude - enemy.latitude;
+      const dLng = target.longitude - enemy.longitude;
+
+      const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+
+      if (dist < 1e-9) return enemy; // Already on top of character
+
+      // normalize step vector
+      const moveLat = (dLat / dist) * (stepSizeMeters / 111111); // meters to lat
+      const moveLng = (dLng / dist) * (stepSizeMeters / (111111 * Math.cos(enemy.latitude * (Math.PI/180))));
+
+      return {
+        ...enemy,
+        latitude: enemy.latitude + moveLat,
+        longitude: enemy.longitude + moveLng,
+      };
+    }
 
     useEffect(() => {
       if (!location || items.length === 0) {
@@ -607,6 +648,24 @@ export default function App() {
       const enemyAnimTimer = setInterval(() => {
         setEnemies(prev =>
           prev.map(e => {
+             // If character is in perception
+              if (canSeeCharacter(e, character)) {
+                const distanceFeet = getDistanceMeters(
+                  { lat: e.latitude, lon: e.longitude },
+                  { lat: character.latitude, lon: character.longitude }
+                ) * 3.28084;
+
+                // If in attack range → attack
+                if (distanceFeet <= e.speed) {
+                  const attack = abilitiesList.find(ab => ab.name === "Punch");
+                  meleeAttack(e, attack, character, false);
+                  return e;
+                }
+
+                // Otherwise → move toward character
+                return moveToward(e, character, 1); // move 1m per tick
+              }
+
             if (!e.path || e.path.length < 2) return e;
 
             const current = e.path[e.step];
@@ -1097,7 +1156,6 @@ export default function App() {
                   })
                   .filter((a) => {
                     if (!a.requiredItem) return true; // no requirement → always available
-
                     const ci = inventory.find((i) => i.itemId === a.requiredItem);
                     if (!ci) return false; // item not found → can't unlock
 
