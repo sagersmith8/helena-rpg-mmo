@@ -36,6 +36,7 @@ export interface BackgroundsDeleteRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: BackgroundsDeletePreferEnum;
 }
 
@@ -53,6 +54,7 @@ export interface BackgroundsGetRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     select?: string;
     order?: string;
     range?: string;
@@ -76,6 +78,7 @@ export interface BackgroundsPatchRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: BackgroundsPatchPreferEnum;
     backgrounds?: Backgrounds;
 }
@@ -146,6 +149,10 @@ export class BackgroundsApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -228,6 +235,10 @@ export class BackgroundsApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         if (requestParameters['select'] != null) {
@@ -342,6 +353,10 @@ export class BackgroundsApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

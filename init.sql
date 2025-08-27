@@ -14,8 +14,12 @@ create table items (
   id serial primary key,
   name text not null,
   description text,
-  type text check (type in ('weapon','armor','consumable','resource')),
+  type text check (type in ('weapon','armor','consumable','magic', 'resource', 'quest')),
+  mana int default 0, -- mana provided if consumable
+  equipment_slot text check (equipment_slot in ('head','chest','legs','feet','hands','either_hand', 'main_hand','offhand','ring','amulet')) null,
+  tier int default 0, -- item quality/tier
   weight float default 1.0, -- weight for inventory management
+  gold_value bigint default 0, -- base value in gold
   image text -- path to asset
 );
 
@@ -50,7 +54,8 @@ create table ancestries (
   bonus_charisma int default 0,
   bonus_wisdom int default 0,
   bonus_constitution int default 0,
-  bonus_skill int references skills(id)
+  bonus_skill int references skills(id),
+  image text -- path to asset
 );
 
 -- 🎭 Backgrounds
@@ -67,7 +72,8 @@ create table backgrounds (
   bonus_charisma int default 0,
   bonus_wisdom int default 0,
   bonus_constitution int default 0,
-  bonus_skill int references skills(id)
+  bonus_skill int references skills(id),
+  image text -- path to asset
 );
 
 -- ⚔️ Classes
@@ -84,29 +90,8 @@ create table classes (
   bonus_charisma int default 0,
   bonus_wisdom int default 0,
   bonus_constitution int default 0,
-  bonus_skill int references skills(id)
-);
-
--- 👹 Enemies
-create table enemies (
-  id serial primary key,
-  name text not null,
-  health int default 5,
-  mana int default 0,
-  experience_reward int default 10,
-  latitude double precision,
-  longitude double precision,
-  path jsonb,
-  step int default 0,
-  image text
-);
-
--- What enemies drop
-create table enemy_drops (
-  enemy_id int references enemies(id),
-  item_id int references items(id),
-  drop_chance float default 1.0,
-  primary key(enemy_id, item_id)
+  bonus_skill int references skills(id),
+  image text -- path to asset
 );
 
 -- 🧑 Characters
@@ -122,7 +107,9 @@ create table characters (
   size text check (size in ('small','medium','large','huge')) default 'small',
   experience int default 0,
   health int default 10,
+  max_health int default 10,
   mana int default 5,
+  max_mana int default 5,
   longitude double precision,
   latitude double precision,
   strength int default 10,
@@ -163,11 +150,6 @@ GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO anon;
 -- Seed data
 --
 
--- Items
-insert into items (name, description, type, image) values
-  ('Rock', 'A simple rock. Can be thrown or used for bashing.', 'weapon',
-   'rock-copy.png');
-
 -- Skills
 insert into skills (name, description) values
   ('Gather', 'Collect resources from the environment'),
@@ -189,30 +171,33 @@ insert into abilities (name, description, damage, range, cooldown, required_skil
 -- 🌱 Default ancestries
 insert into ancestries
   (name, description, bonus_speed, bonus_health, bonus_mana, base_size,
-   bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill)
+   bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill, image)
 values
   ('Human', 'Adaptable and ambitious, humans are versatile.',
     2, 2, 0, 'medium',
-    3, 1, 1, 3, 1, 2, (select id from skills where name='Gather')),
+    3, 1, 1, 3, 1, 2, (select id from skills where name='Gather'), 'visored-helm.png'),
   ('Elf', 'Graceful and attuned to magic and nature.',
     5, 0, 2, 'medium',
-    0, 2, 2, 1, 2, 0, (select id from skills where name='Gather'));
+    0, 2, 2, 1, 2, 0, (select id from skills where name='Gather'), 'elf-helmet.png'),
+  ('Goblin', 'Small, cunning, and quick-witted.',
+    -3, -1, 0, 'small',
+    -1, 3, 0, 0, 1, -1, (select id from skills where name='Melee'), 'goblin.png');
 
 -- 🎭 Default backgrounds
 insert into backgrounds (name, description, bonus_speed, bonus_health, bonus_mana,
-                            bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill) values
+                            bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill, image) values
   ('Tinker', 'Inventors and improvised engineers, skilled at crafting and tools',
-    0, 0, 0, 0, 0, 3, 0, 1, 0, (select id from skills where name='Crafting')),
+    0, 0, 0, 0, 0, 3, 0, 1, 0, (select id from skills where name='Crafting'), 'hammer-nails.png'),
   ('Herbalist', 'Students of nature and medicine, skilled with plants and remedies',
-    0, 2, 1, 0, 0, 1, 0, 2, 0, (select id from skills where name='Herbalism'));
+    0, 2, 1, 0, 0, 1, 0, 2, 0, (select id from skills where name='Herbalism'), 'herbs-bundle.png');
 
 -- ⚔️ Default classes
 insert into classes (name, description, bonus_speed, bonus_health, bonus_mana,
-                     bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill) values
+                     bonus_strength, bonus_dexterity, bonus_intelligence, bonus_charisma, bonus_wisdom, bonus_constitution, bonus_skill, image) values
   ('Bard', 'Weavers of song and story, inspiring allies and confusing foes.',
     0, 0, 2, 0, 1, 2, 3, 1, 0,
-    (select id from skills where name='Melee')),
+    (select id from skills where name='Melee'), 'lyre.png'),
   ('Druid', 'Guardians of the wild, attuned to balance and nature’s fury.',
     0, 3, 0, 3, 2, 0, 1, 0, 1,
-    (select id from skills where name='Magic'));
+    (select id from skills where name='Melee'), 'oak.png');
 

@@ -34,7 +34,9 @@ export interface CharactersDeleteRequest {
     size?: string;
     experience?: string;
     health?: string;
+    maxHealth?: string;
     mana?: string;
+    maxMana?: string;
     longitude?: string;
     latitude?: string;
     strength?: string;
@@ -59,7 +61,9 @@ export interface CharactersGetRequest {
     size?: string;
     experience?: string;
     health?: string;
+    maxHealth?: string;
     mana?: string;
+    maxMana?: string;
     longitude?: string;
     latitude?: string;
     strength?: string;
@@ -90,7 +94,9 @@ export interface CharactersPatchRequest {
     size?: string;
     experience?: string;
     health?: string;
+    maxHealth?: string;
     mana?: string;
+    maxMana?: string;
     longitude?: string;
     latitude?: string;
     strength?: string;
@@ -164,8 +170,16 @@ export class CharactersApi extends runtime.BaseAPI {
             queryParameters['health'] = requestParameters['health'];
         }
 
+        if (requestParameters['maxHealth'] != null) {
+            queryParameters['max_health'] = requestParameters['maxHealth'];
+        }
+
         if (requestParameters['mana'] != null) {
             queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['maxMana'] != null) {
+            queryParameters['max_mana'] = requestParameters['maxMana'];
         }
 
         if (requestParameters['longitude'] != null) {
@@ -278,8 +292,16 @@ export class CharactersApi extends runtime.BaseAPI {
             queryParameters['health'] = requestParameters['health'];
         }
 
+        if (requestParameters['maxHealth'] != null) {
+            queryParameters['max_health'] = requestParameters['maxHealth'];
+        }
+
         if (requestParameters['mana'] != null) {
             queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['maxMana'] != null) {
+            queryParameters['max_mana'] = requestParameters['maxMana'];
         }
 
         if (requestParameters['longitude'] != null) {
@@ -424,8 +446,16 @@ export class CharactersApi extends runtime.BaseAPI {
             queryParameters['health'] = requestParameters['health'];
         }
 
+        if (requestParameters['maxHealth'] != null) {
+            queryParameters['max_health'] = requestParameters['maxHealth'];
+        }
+
         if (requestParameters['mana'] != null) {
             queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['maxMana'] != null) {
+            queryParameters['max_mana'] = requestParameters['maxMana'];
         }
 
         if (requestParameters['longitude'] != null) {

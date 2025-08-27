@@ -37,6 +37,7 @@ export interface AncestriesDeleteRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: AncestriesDeletePreferEnum;
 }
 
@@ -55,6 +56,7 @@ export interface AncestriesGetRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     select?: string;
     order?: string;
     range?: string;
@@ -79,6 +81,7 @@ export interface AncestriesPatchRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: AncestriesPatchPreferEnum;
     ancestries?: Ancestries;
 }
@@ -153,6 +156,10 @@ export class AncestriesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -239,6 +246,10 @@ export class AncestriesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         if (requestParameters['select'] != null) {
@@ -357,6 +368,10 @@ export class AncestriesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

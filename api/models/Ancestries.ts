@@ -105,6 +105,12 @@ export interface Ancestries {
      * @memberof Ancestries
      */
     bonusSkill?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Ancestries
+     */
+    image?: string;
 }
 
 /**
@@ -140,6 +146,7 @@ export function AncestriesFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'bonusWisdom': json['bonus_wisdom'] == null ? undefined : json['bonus_wisdom'],
         'bonusConstitution': json['bonus_constitution'] == null ? undefined : json['bonus_constitution'],
         'bonusSkill': json['bonus_skill'] == null ? undefined : json['bonus_skill'],
+        'image': json['image'] == null ? undefined : json['image'],
     };
 }
 
@@ -168,6 +175,7 @@ export function AncestriesToJSONTyped(value?: Ancestries | null, ignoreDiscrimin
         'bonus_wisdom': value['bonusWisdom'],
         'bonus_constitution': value['bonusConstitution'],
         'bonus_skill': value['bonusSkill'],
+        'image': value['image'],
     };
 }
 

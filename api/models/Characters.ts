@@ -94,7 +94,19 @@ export interface Characters {
      * @type {number}
      * @memberof Characters
      */
+    maxHealth?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Characters
+     */
     mana?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Characters
+     */
+    maxMana?: number;
     /**
      * 
      * @type {number}
@@ -181,7 +193,9 @@ export function CharactersFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'size': json['size'] == null ? undefined : json['size'],
         'experience': json['experience'] == null ? undefined : json['experience'],
         'health': json['health'] == null ? undefined : json['health'],
+        'maxHealth': json['max_health'] == null ? undefined : json['max_health'],
         'mana': json['mana'] == null ? undefined : json['mana'],
+        'maxMana': json['max_mana'] == null ? undefined : json['max_mana'],
         'longitude': json['longitude'] == null ? undefined : json['longitude'],
         'latitude': json['latitude'] == null ? undefined : json['latitude'],
         'strength': json['strength'] == null ? undefined : json['strength'],
@@ -216,7 +230,9 @@ export function CharactersToJSONTyped(value?: Characters | null, ignoreDiscrimin
         'size': value['size'],
         'experience': value['experience'],
         'health': value['health'],
+        'max_health': value['maxHealth'],
         'mana': value['mana'],
+        'max_mana': value['maxMana'],
         'longitude': value['longitude'],
         'latitude': value['latitude'],
         'strength': value['strength'],

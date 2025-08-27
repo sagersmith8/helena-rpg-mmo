@@ -36,6 +36,7 @@ export interface ClassesDeleteRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: ClassesDeletePreferEnum;
 }
 
@@ -53,6 +54,7 @@ export interface ClassesGetRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     select?: string;
     order?: string;
     range?: string;
@@ -76,6 +78,7 @@ export interface ClassesPatchRequest {
     bonusWisdom?: string;
     bonusConstitution?: string;
     bonusSkill?: string;
+    image?: string;
     prefer?: ClassesPatchPreferEnum;
     classes?: Classes;
 }
@@ -146,6 +149,10 @@ export class ClassesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -228,6 +235,10 @@ export class ClassesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         if (requestParameters['select'] != null) {
@@ -342,6 +353,10 @@ export class ClassesApi extends runtime.BaseAPI {
 
         if (requestParameters['bonusSkill'] != null) {
             queryParameters['bonus_skill'] = requestParameters['bonusSkill'];
+        }
+
+        if (requestParameters['image'] != null) {
+            queryParameters['image'] = requestParameters['image'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

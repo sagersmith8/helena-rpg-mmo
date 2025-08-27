@@ -73,6 +73,9 @@
                         "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.classes.image"
+                    },
+                    {
                         "$ref": "#/components/parameters/select"
                     },
                     {
@@ -203,6 +206,9 @@
                         "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.classes.image"
+                    },
+                    {
                         "$ref": "#/components/parameters/preferReturn"
                     }
                 ],
@@ -257,6 +263,9 @@
                         "$ref": "#/components/parameters/rowFilter.classes.bonus_skill"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.classes.image"
+                    },
+                    {
                         "$ref": "#/components/parameters/preferReturn"
                     }
                 ],
@@ -270,159 +279,6 @@
                 },
                 "tags": [
                     "classes"
-                ]
-            }
-        },
-        "/enemy_drops": {
-            "get": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
-                    },
-                    {
-                        "$ref": "#/components/parameters/select"
-                    },
-                    {
-                        "$ref": "#/components/parameters/order"
-                    },
-                    {
-                        "$ref": "#/components/parameters/range"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rangeUnit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/offset"
-                    },
-                    {
-                        "$ref": "#/components/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferCount"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemy_drops"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "application/vnd.pgrst.object+json;nulls=stripped": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemy_drops"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "application/vnd.pgrst.object+json": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemy_drops"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "text/csv": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemy_drops"
-                                    },
-                                    "type": "array"
-                                }
-                            }
-                        }
-                    },
-                    "206": {
-                        "description": "Partial Content"
-                    }
-                },
-                "tags": [
-                    "enemy_drops"
-                ]
-            },
-            "post": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/select"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferPost"
-                    }
-                ],
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/enemy_drops"
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                },
-                "tags": [
-                    "enemy_drops"
-                ]
-            },
-            "delete": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                },
-                "tags": [
-                    "enemy_drops"
-                ]
-            },
-            "patch": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.enemy_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.item_id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemy_drops.drop_chance"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferReturn"
-                    }
-                ],
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/enemy_drops"
-                },
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                },
-                "tags": [
-                    "enemy_drops"
                 ]
             }
         },
@@ -467,6 +323,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.image"
                     },
                     {
                         "$ref": "#/components/parameters/select"
@@ -599,6 +458,9 @@
                         "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.image"
+                    },
+                    {
                         "$ref": "#/components/parameters/preferReturn"
                     }
                 ],
@@ -651,6 +513,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.backgrounds.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.backgrounds.image"
                     },
                     {
                         "$ref": "#/components/parameters/preferReturn"
@@ -1264,7 +1129,13 @@
                         "$ref": "#/components/parameters/rowFilter.characters.health"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_health"
+                    },
+                    {
                         "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_mana"
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.characters.longitude"
@@ -1418,7 +1289,13 @@
                         "$ref": "#/components/parameters/rowFilter.characters.health"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_health"
+                    },
+                    {
                         "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_mana"
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.characters.longitude"
@@ -1496,7 +1373,13 @@
                         "$ref": "#/components/parameters/rowFilter.characters.health"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_health"
+                    },
+                    {
                         "$ref": "#/components/parameters/rowFilter.characters.mana"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.characters.max_mana"
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.characters.longitude"
@@ -1586,6 +1469,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.image"
                     },
                     {
                         "$ref": "#/components/parameters/select"
@@ -1721,6 +1607,9 @@
                         "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
                     },
                     {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.image"
+                    },
+                    {
                         "$ref": "#/components/parameters/preferReturn"
                     }
                 ],
@@ -1776,6 +1665,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/rowFilter.ancestries.bonus_skill"
+                    },
+                    {
+                        "$ref": "#/components/parameters/rowFilter.ancestries.image"
                     },
                     {
                         "$ref": "#/components/parameters/preferReturn"
@@ -1953,222 +1845,6 @@
                 },
                 "tags": [
                     "inventory"
-                ]
-            }
-        },
-        "/enemies": {
-            "get": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.name"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.health"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.path"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.step"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.image"
-                    },
-                    {
-                        "$ref": "#/components/parameters/select"
-                    },
-                    {
-                        "$ref": "#/components/parameters/order"
-                    },
-                    {
-                        "$ref": "#/components/parameters/range"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rangeUnit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/offset"
-                    },
-                    {
-                        "$ref": "#/components/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferCount"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemies"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "application/vnd.pgrst.object+json;nulls=stripped": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemies"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "application/vnd.pgrst.object+json": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemies"
-                                    },
-                                    "type": "array"
-                                }
-                            },
-                            "text/csv": {
-                                "schema": {
-                                    "items": {
-                                        "$ref": "#/components/schemas/enemies"
-                                    },
-                                    "type": "array"
-                                }
-                            }
-                        }
-                    },
-                    "206": {
-                        "description": "Partial Content"
-                    }
-                },
-                "tags": [
-                    "enemies"
-                ]
-            },
-            "post": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/select"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferPost"
-                    }
-                ],
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/enemies"
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                },
-                "tags": [
-                    "enemies"
-                ]
-            },
-            "delete": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.name"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.health"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.path"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.step"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.image"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferReturn"
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                },
-                "tags": [
-                    "enemies"
-                ]
-            },
-            "patch": {
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.id"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.name"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.health"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.mana"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.experience_reward"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.latitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.longitude"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.path"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.step"
-                    },
-                    {
-                        "$ref": "#/components/parameters/rowFilter.enemies.image"
-                    },
-                    {
-                        "$ref": "#/components/parameters/preferReturn"
-                    }
-                ],
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/enemies"
-                },
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                },
-                "tags": [
-                    "enemies"
                 ]
             }
         },
@@ -2584,24 +2260,8 @@
                     "type": "string"
                 }
             },
-            "rowFilter.enemy_drops.enemy_id": {
-                "name": "enemy_id",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemy_drops.item_id": {
-                "name": "item_id",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemy_drops.drop_chance": {
-                "name": "drop_chance",
+            "rowFilter.classes.image": {
+                "name": "image",
                 "required": false,
                 "in": "query",
                 "schema": {
@@ -2706,6 +2366,14 @@
             },
             "rowFilter.backgrounds.bonus_skill": {
                 "name": "bonus_skill",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.backgrounds.image": {
+                "name": "image",
                 "required": false,
                 "in": "query",
                 "schema": {
@@ -2960,8 +2628,24 @@
                     "type": "string"
                 }
             },
+            "rowFilter.characters.max_health": {
+                "name": "max_health",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
             "rowFilter.characters.mana": {
                 "name": "mana",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "rowFilter.characters.max_mana": {
+                "name": "max_mana",
                 "required": false,
                 "in": "query",
                 "schema": {
@@ -3152,6 +2836,14 @@
                     "type": "string"
                 }
             },
+            "rowFilter.ancestries.image": {
+                "name": "image",
+                "required": false,
+                "in": "query",
+                "schema": {
+                    "type": "string"
+                }
+            },
             "rowFilter.inventory.character_id": {
                 "name": "character_id",
                 "required": false,
@@ -3178,86 +2870,6 @@
             },
             "rowFilter.inventory.quantity": {
                 "name": "quantity",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.id": {
-                "name": "id",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.name": {
-                "name": "name",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.health": {
-                "name": "health",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.mana": {
-                "name": "mana",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.experience_reward": {
-                "name": "experience_reward",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.latitude": {
-                "name": "latitude",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.longitude": {
-                "name": "longitude",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.path": {
-                "name": "path",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.step": {
-                "name": "step",
-                "required": false,
-                "in": "query",
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "rowFilter.enemies.image": {
-                "name": "image",
                 "required": false,
                 "in": "query",
                 "schema": {
@@ -3314,31 +2926,6 @@
             }
         },
         "requestBodies": {
-            "enemies": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemies"
-                        }
-                    },
-                    "application/vnd.pgrst.object+json;nulls=stripped": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemies"
-                        }
-                    },
-                    "application/vnd.pgrst.object+json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemies"
-                        }
-                    },
-                    "text/csv": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemies"
-                        }
-                    }
-                },
-                "description": "enemies"
-            },
             "items": {
                 "content": {
                     "application/json": {
@@ -3514,31 +3101,6 @@
                 },
                 "description": "ancestries"
             },
-            "enemy_drops": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemy_drops"
-                        }
-                    },
-                    "application/vnd.pgrst.object+json;nulls=stripped": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemy_drops"
-                        }
-                    },
-                    "application/vnd.pgrst.object+json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemy_drops"
-                        }
-                    },
-                    "text/csv": {
-                        "schema": {
-                            "$ref": "#/components/schemas/enemy_drops"
-                        }
-                    }
-                },
-                "description": "enemy_drops"
-            },
             "abilities": {
                 "content": {
                     "application/json": {
@@ -3659,30 +3221,10 @@
                         "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
                         "format": "integer",
                         "type": "integer"
-                    }
-                },
-                "type": "object"
-            },
-            "enemy_drops": {
-                "required": [
-                    "enemy_id",
-                    "item_id"
-                ],
-                "properties": {
-                    "enemy_id": {
-                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `enemies.id`.<fk table='enemies' column='id'/>",
-                        "format": "integer",
-                        "type": "integer"
                     },
-                    "item_id": {
-                        "description": "Note:\nThis is a Primary Key.<pk/>\nThis is a Foreign Key to `items.id`.<fk table='items' column='id'/>",
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "drop_chance": {
-                        "default": 1,
-                        "format": "double precision",
-                        "type": "number"
+                    "image": {
+                        "format": "text",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3755,6 +3297,10 @@
                         "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
                         "format": "integer",
                         "type": "integer"
+                    },
+                    "image": {
+                        "format": "text",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3941,7 +3487,17 @@
                         "format": "integer",
                         "type": "integer"
                     },
+                    "max_health": {
+                        "default": 10,
+                        "format": "integer",
+                        "type": "integer"
+                    },
                     "mana": {
+                        "default": 5,
+                        "format": "integer",
+                        "type": "integer"
+                    },
+                    "max_mana": {
                         "default": 5,
                         "format": "integer",
                         "type": "integer"
@@ -4065,6 +3621,10 @@
                         "description": "Note:\nThis is a Foreign Key to `skills.id`.<fk table='skills' column='id'/>",
                         "format": "integer",
                         "type": "integer"
+                    },
+                    "image": {
+                        "format": "text",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -4094,59 +3654,6 @@
                         "default": 1,
                         "format": "integer",
                         "type": "integer"
-                    }
-                },
-                "type": "object"
-            },
-            "enemies": {
-                "required": [
-                    "id",
-                    "name"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "Note:\nThis is a Primary Key.<pk/>",
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "name": {
-                        "format": "text",
-                        "type": "string"
-                    },
-                    "health": {
-                        "default": 5,
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "mana": {
-                        "default": 0,
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "experience_reward": {
-                        "default": 10,
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "latitude": {
-                        "format": "double precision",
-                        "type": "number"
-                    },
-                    "longitude": {
-                        "format": "double precision",
-                        "type": "number"
-                    },
-                    "path": {
-                        "format": "jsonb"
-                    },
-                    "step": {
-                        "default": 0,
-                        "format": "integer",
-                        "type": "integer"
-                    },
-                    "image": {
-                        "format": "text",
-                        "type": "string"
                     }
                 },
                 "type": "object"

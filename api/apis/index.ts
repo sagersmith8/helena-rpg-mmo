@@ -6,8 +6,6 @@ export * from './BackgroundsApi';
 export * from './CharacterSkillsApi';
 export * from './CharactersApi';
 export * from './ClassesApi';
-export * from './EnemiesApi';
-export * from './EnemyDropsApi';
 export * from './IntrospectionApi';
 export * from './InventoryApi';
 export * from './ItemsApi';

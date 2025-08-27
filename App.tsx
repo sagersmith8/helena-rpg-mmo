@@ -4,7 +4,6 @@ import MapView, { Marker, PROVIDER_GOOGLE, Circle, Callout } from "react-native-
 import * as Location from "expo-location";
 import Api from "Api.tsx"
 import * as SecureStore from 'expo-secure-store';
-import GoblinIcon from "./assets/icons/svg/goblin.svg";
 import Knapsack from "./assets/icons/svg/knapsack.svg";
 import AbdominalArmor from "./assets/icons/svg/abdominal-armor.svg";
 import SwordInStone from "./assets/icons/svg/battle-gear.svg";
@@ -16,6 +15,7 @@ type Enemy = Characters & {
   path: { lat: number; lng: number }[];
   step: number;
   inventory: number[];
+  lastAttackTime?: number;
 };
 
 const generateCirclePoints = (lat: number, lng: number, radiusMeters: number, numPoints: number) => {
@@ -125,6 +125,7 @@ export default function App() {
     function addToInventory(itemOnMapId: number) {
         const itemOnMap = itemsOnMap.find(i => i.id === itemOnMapId);
         const existingItem = inventory.find(i => i.itemId === itemOnMap?.itemId);
+
         if (existingItem) {
             existingItem.quantity += 1;
             setInventory([...inventory]);
@@ -217,6 +218,17 @@ export default function App() {
         return 10 + (ancestry?.bonusIntelligence ?? 0) + (background?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0);
     }
 
+    function fibbonaci(n: number): number {
+        if (n <= 1) return n;
+        let a = 0, b = 1, temp;
+        for (let i = 2; i <= n; i++) {
+            temp = a + b;
+            a = b;
+            b = temp;
+        }
+        return b;
+    }
+
     async function spawnEnemy(latitude: number, longitude: number) {
       try {
         console.log("Spawning enemy...");
@@ -256,18 +268,31 @@ export default function App() {
         const rock = items.find(i => i.name === "Rock");
 
         const id = Math.floor(Math.random() * 1000000);
+        const enemyAncestry = ancestries.find(a => a.name === "Goblin");
+        const enemyHealth = 10 + (enemyAncestry?.bonusConstitution ?? 0);
 
         const enemy = {
           id,
+          name: "Goblin",
           latitude: routeCoords[0].lat,
           longitude: routeCoords[0].lng,
           path: routeCoords,
           step: 0, // start at the beginning of the path
-          health: Math.floor(Math.random() * 10) + 5, // 5–15
+          health: enemyHealth, // 5–15
+          maxHealth: enemyHealth,
+          mana: 0,
+          maxMana: 0,
+          experience: 10,
+          level: 1,
+          ancestry: enemyAncestry?.id,
           ac: Math.floor(Math.random() * 2) + 3, // 3–5
-          speed: 30 + Math.floor(Math.random() * 10), // 30–40
-          perception: 50 + Math.floor(Math.random() * 50), // 50–100
-          image: "goblin.png",
+          speed: 30 + enemyAncestry?.bonusSpeed,
+          strength: 10 + enemyAncestry?.bonusStrength,
+          dexterity: 10 + enemyAncestry?.bonusDexterity,
+          constitution: 10 + enemyAncestry?.bonusConstitution,
+          intelligence: 20 + enemyAncestry?.bonusIntelligence,
+          wisdom: 20 + enemyAncestry?.bonusWisdom,
+          charisma: 10 + enemyAncestry?.bonusCharisma,
           inventory: rock ? [rock.id] : [], // safe guard
         };
 
@@ -284,8 +309,8 @@ export default function App() {
           ...prev,
           {
             id: `${Date.now()}`,
-            lat: attacker.latitude + (Math.random() - 0.5) * 0.0001,
-            lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
+            lat: attacker.latitude + (Math.random() - 0.5) * 0.0003,
+            lng:  attacker.longitude + (Math.random() - 0.5) * 0.0003,
             text: "Miss!",
             color: "gray",
             expiresAt: Date.now() + 1000,
@@ -300,8 +325,8 @@ export default function App() {
                  ...prev,
                  {
                    id: `${Date.now()}`,
-                   lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
-                   lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
+                   lat:  attacker.latitude + (Math.random() - 0.5) * 0.0003,
+                   lng:  attacker.longitude + (Math.random() - 0.5) * 0.0003,
                    text: "Miss!",
                    color: "gray",
                    expiresAt: Date.now() + 1000,
@@ -315,7 +340,7 @@ export default function App() {
       const distance = getDistanceMeters(
         { lat:  attacker.latitude, lon:  attacker.longitude },
         { lat: defender.latitude, lon: defender.longitude }
-      ) * 3.28084; // convert to feet
+      );
 
       // D&D style strength modifier
       const strengthModifier = Math.floor(((character.strength ?? 10) - 10) / 2);
@@ -329,8 +354,8 @@ export default function App() {
               ...prev,
               {
                 id: `${Date.now()}`,
-                lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
-                lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
+                lat:  attacker.latitude + (Math.random() - 0.5) * 0.0003,
+                lng:  attacker.longitude + (Math.random() - 0.5) * 0.0003,
                 text: "Miss!",
                 color: "gray",
                 expiresAt: Date.now() + 1000,
@@ -359,8 +384,8 @@ export default function App() {
               ...prev,
               {
                 id: `${defender.id}-${Date.now()}`, // unique
-                  lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001, // slight random offset
-                  lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
+                lat:  attacker.latitude + (Math.random() - 0.5) * 0.0003, // slight random offset
+                lng:  attacker.longitude + (Math.random() - 0.5) * 0.0003,
                 text: `-${damageRoll}`,
                 color: "red",
                 expiresAt: Date.now() + 1000, // 1 second
@@ -372,8 +397,8 @@ export default function App() {
               ...prev,
               {
                 id: `${defender.id}-${Date.now()}`,
-              lat:  attacker.latitude + (Math.random() - 0.5) * 0.0001,
-              lng:  attacker.longitude + (Math.random() - 0.5) * 0.0001,
+              lat:  attacker.latitude + (Math.random() - 0.5) * 0.0003,
+              lng:  attacker.longitude + (Math.random() - 0.5) * 0.0003,
                 text: "Miss!",
                 color: "gray",
                 expiresAt: Date.now() + 1000, // 1 second
@@ -389,9 +414,51 @@ export default function App() {
             for (const itemId of defender.inventory) {
               spawnItemOnMap(
                 itemId,
-                defender.latitude + (Math.random() - 0.5) * 0.001,
-                defender.longitude + (Math.random() - 0.5) * 0.001
+                defender.latitude + (Math.random() - 0.5) * 0.0003,
+                defender.longitude + (Math.random() - 0.5) * 0.0003
               );
+            }
+            // Award experience increment level
+            const expGain = defender.level ?? 0;
+            const newExp = (character.experience ?? 0) + expGain;
+            // Fibbonacci-like level up requirement
+            const nextLevelExp = fibbonaci((character.level ?? 1) + 1);
+            if (newExp >= nextLevelExp) {
+                const newLevel = (character.level ?? 1) + 1;
+                const newMaxHealth = calculateHP() + (newLevel - 1) * 5;
+                const newMaxMana = calculateMana() + (newLevel - 1) * 5;
+                // Alert with new values
+                alert(`Level Up! You are now level ${newLevel}!\nMax Health: ${newMaxHealth}\nMax Mana: ${newMaxMana}`);
+                const updatedChar = character
+                  ? {
+                      ...character,
+                      level: newLevel,
+                      experience: newExp,
+                      maxHealth: newMaxHealth,
+                      health: newMaxHealth,
+                      maxMana: newMaxMana,
+                      mana: newMaxMana,
+                    }
+                  : character;
+
+                setCharacter(updatedChar);
+
+                charactersApi.charactersPatch({
+                  characters: updatedChar,
+                }).catch(err => console.error("Failed to update character level:", err));
+            } else {
+                const updatedChar = character
+                  ? {
+                      ...character,
+                      experience: newExp,
+                    }
+                  : character;
+
+                setCharacter(updatedChar);
+
+                charactersApi.charactersPatch({
+                  characters: updatedChar,
+                }).catch(err => console.error("Failed to update character level:", err));
             }
         } else {
             console.log("Character defeated!");
@@ -432,8 +499,8 @@ export default function App() {
               ...prev,
               {
                 id: `${Date.now()}`,
-              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0001,
-              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0001,
+              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0003,
+              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0003,
                 text: "Dig!",
                 color: "purple",
                 expiresAt: Date.now() + 1000, // 1 second
@@ -595,11 +662,12 @@ export default function App() {
     }, []);
 
     const canSeeCharacter = (enemy: Enemy, character: Character) => {
+      if (!character?.latitude || !character?.longitude) return false;
       const dist = getDistanceMeters(
         { lat: enemy.latitude, lon: enemy.longitude },
         { lat: character.latitude, lon: character.longitude }
       );
-      return dist * 3.28084 <= (enemy.perception ?? 0);
+      return dist <= (enemy.wisdom + enemy.intelligence);
     };
 
     function moveToward(enemy: Enemy, target: Character, stepSizeMeters: number): Enemy {
@@ -630,8 +698,8 @@ export default function App() {
       if (enemies.length === 0) {
         console.log("Spawning initial enemies...");
         spawnEnemy(
-            location.coords.latitude + (Math.random() - 0.5) * 0.001,
-            location.coords.longitude + (Math.random() - 0.5) * 0.001);
+            location.coords.latitude + (Math.random() - 0.5) * 0.0005,
+            location.coords.longitude + (Math.random() - 0.5) * 0.0005);
       }
 
     // Spawn enemies every 5 minutes
@@ -650,15 +718,20 @@ export default function App() {
           prev.map(e => {
              // If character is in perception
               if (canSeeCharacter(e, character)) {
-                const distanceFeet = getDistanceMeters(
+                const distance = getDistanceMeters(
                   { lat: e.latitude, lon: e.longitude },
                   { lat: character.latitude, lon: character.longitude }
-                ) * 3.28084;
+                );
+
+                const now = Date.now();
 
                 // If in attack range → attack
-                if (distanceFeet <= e.speed) {
-                  const attack = abilitiesList.find(ab => ab.name === "Punch");
-                  meleeAttack(e, attack, character, false);
+                if (distance <= e.speed) {
+                  if (!e.lastAttackTime || now - e.lastAttackTime >= 2000) {
+                      const attack = abilitiesList.find(ab => ab.name === "Punch");
+                      meleeAttack(e, attack, character, false);
+                      return { ...e, lastAttackTime: now };
+                    }
                   return e;
                 }
 
@@ -738,7 +811,10 @@ export default function App() {
                       <View key={label} style={styles.dropdown}>
                         <TouchableOpacity onPress={toggle}>
                           <Text style={styles.dropdownLabel}>{label}</Text>
-                          <Text style={styles.dropdownValue}>{value?.name || "—"}</Text>
+                          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                              <Image source={{ uri: imageHost + value?.image }} style={{ width: 20, height: 20}} />
+                              <Text style={styles.dropdownValue}>{value?.name || "—"}</Text>
+                          </View>
                         </TouchableOpacity>
 
                         {(
@@ -753,7 +829,10 @@ export default function App() {
                                 onPress={() => {setter(item); toggle()}}
                                 style={styles.dropdownItem}
                               >
-                                <Text style={styles.dropdownText}>{item.name}</Text>
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <Image source={{ uri: imageHost + item.image }} style={{width: 20, height: 20}} />
+                                    <Text style={styles.dropdownText}>{item.name}</Text>
+                                </View>
                               </TouchableOpacity>
                             ))}
                           </View>
@@ -785,7 +864,7 @@ export default function App() {
                     <Text style={styles.sectionTitle}>Defenses</Text>
                     <View style={styles.row}>
                       <View style={styles.statBlock}><Text style={styles.statLabel}>Size</Text><Text style={styles.statValue}>{ancestry?.baseSize ?? "N/A"}</Text></View>
-                      <View style={styles.statBlock}><Text style={styles.statLabel}>Speed</Text><Text style={styles.statValue}>{calculateSpeed()}ft</Text></View>
+                      <View style={styles.statBlock}><Text style={styles.statLabel}>Speed</Text><Text style={styles.statValue}>{calculateSpeed()}m</Text></View>
                       <View style={styles.statBlock}><Text style={styles.statLabel}>AC</Text><Text style={styles.statValue}>{calculateAC()}</Text></View>
                       <View style={styles.statBlock}><Text style={styles.statLabel}>HP</Text><Text style={styles.statValue}>{calculateHP()}</Text></View>
                         <View style={styles.statBlock}><Text style={styles.statLabel}>Mana</Text><Text style={styles.statValue}>{calculateMana()}</Text></View>
@@ -825,7 +904,9 @@ export default function App() {
                           gold: 0,
                           experience: 0,
                           health: calculateHP(),
+                          maxHealth: calculateHP(),
                           mana: calculateMana(),
+                          maxMana: calculateMana(),
                           longitude: location?.coords.longitude ?? 0,
                           latitude: location?.coords.latitude ?? 0,
                           equipment: equipment,
@@ -882,9 +963,9 @@ export default function App() {
   const currentMana = 20; // Example XP value
   const maxMana = 250;
 
-  const hpPercentage = (character.health / character.health) * 100;
-  const xpPercentage = (character.experience / (character.experience + character.level)) * 100;
-  const manaPercentage = (character.mana / character.mana) * 100;
+  const hpPercentage = (character.health / character.maxHealth) * 100;
+  const xpPercentage = (character.experience / fibbonaci(character.level +1)) * 100;
+  const manaPercentage = (character.mana / character.maxMana) * 100;
 
 
   return (
@@ -929,7 +1010,7 @@ export default function App() {
         provider={PROVIDER_GOOGLE}
         scrollEnabled={false}
         zoomEnabled={false}
-        rotateEnabled={false}
+        rotateEnabled={true}
         showsUserLocation={false}
       >
           {floatingTexts.map(ft => (
@@ -984,17 +1065,17 @@ export default function App() {
         {enemies.map(e => (
           <Marker
               key={e.id}
-              title={`Goblin`}
+              title={e.name}
               anchor={{ x: 0.3, y: 0.4 }}
-              description={`Level: 1 | Health: ${e.health} | AC: ${e.ac}`}
+              description={`Level: ${e.level} | Health: ${e.health}/${e.maxHealth} | AC: ${e.ac}`}
               coordinate={{ latitude: e.latitude, longitude: e.longitude }}
               onPress={() => setTargetedEnemy(e.id)}
             >
               <View style={{ width: 20, height: 20 }}>
-                <GoblinIcon
+                <Image
+                  source={{ uri: imageHost + ancestries.find(a => a.id === e.ancestry)?.image }} // assuming Goblin has id 1
                   width={20}
                   height={20}
-                  fill={targetedEnemy === e.id ? "purple" : "black"}
                   style={{
                     transform: [{ scale: targetedEnemy === e.id ? 1.3 : 1 }],
                   }}
@@ -1005,21 +1086,7 @@ export default function App() {
         {enemies.map(e => {
           if (!location) return null;
 
-          // Quick haversine for distance in meters
-          const toRad = (x: number) => (x * Math.PI) / 180;
-          const R = 6371e3; // Earth radius in meters
-          const dLat = toRad(location.coords.latitude - e.latitude);
-          const dLon = toRad(location.coords.longitude - e.longitude);
-          const lat1 = toRad(e.latitude);
-          const lat2 = toRad(location.coords.latitude);
-
-          const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = R * c;
-
-          const canPerceive = distance * 3.28084 <= e.perception ;
+          const canPerceive = canSeeCharacter(e, character);
 
           return (
             <Circle
@@ -1028,7 +1095,7 @@ export default function App() {
                 latitude: e.latitude,
                 longitude: e.longitude,
               }}
-              radius={canPerceive ? e.speed * 0.3048 : e.perception * 0.3048}
+              radius={canPerceive ? e.speed: (e.wisdom + e.intelligence)}
               strokeWidth={2}
               strokeColor={canPerceive ? "rgba(255,0,0,0.6)" : "rgba(0,0,255,0.6)"}
               fillColor={canPerceive ? "rgba(255,0,0,0.2)" : "rgba(0,0,255, 0.2)"}
@@ -1040,7 +1107,7 @@ export default function App() {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude
           }}
-          radius={character.speed * 0.3048} // meters
+          radius={character.speed} // meters
           strokeWidth={2}
           strokeColor="rgba(255,0,255,0.6)"
           fillColor="rgba(255,0, 255, 0.2)"
@@ -1052,7 +1119,7 @@ export default function App() {
                   <View style={styles.barBackground}>
                     <View style={[styles.barFill, { width: `${hpPercentage}%`, backgroundColor: "red" }]} />
                   </View>
-                  <Text>HP: {character.health}/{character.health}</Text>
+                  <Text>HP: {character.health}/{character.maxHealth}</Text>
                 </View>
 
               {/* Mana Bar */}
@@ -1060,7 +1127,7 @@ export default function App() {
                 <View style={styles.barBackground}>
                   <View style={[styles.barFill, { width: `${manaPercentage}%`, backgroundColor: "blue" }]} />
                 </View>
-                <Text>Mana: {character.mana}/{character.mana}</Text>
+                <Text>Mana: {character.mana}/{character.maxMana}</Text>
               </View>
 
                 {/* XP Bar */}
@@ -1068,7 +1135,7 @@ export default function App() {
                   <View style={styles.barBackground}>
                     <View style={[styles.barFill, { width: `${xpPercentage}%`, backgroundColor: "gold" }]} />
                   </View>
-                    <Text>XP: {character.experience}/{(character.experience + character.level)}</Text>
+                    <Text>XP: {character.experience}/{fibbonaci(character.level +1)}</Text>
                 </View>
         </View>
 
