@@ -27,7 +27,11 @@ export interface ItemsDeleteRequest {
     name?: string;
     description?: string;
     type?: string;
+    mana?: string;
+    equipmentSlot?: string;
+    tier?: string;
     weight?: string;
+    goldValue?: string;
     image?: string;
     prefer?: ItemsDeletePreferEnum;
 }
@@ -37,7 +41,11 @@ export interface ItemsGetRequest {
     name?: string;
     description?: string;
     type?: string;
+    mana?: string;
+    equipmentSlot?: string;
+    tier?: string;
     weight?: string;
+    goldValue?: string;
     image?: string;
     select?: string;
     order?: string;
@@ -53,7 +61,11 @@ export interface ItemsPatchRequest {
     name?: string;
     description?: string;
     type?: string;
+    mana?: string;
+    equipmentSlot?: string;
+    tier?: string;
     weight?: string;
+    goldValue?: string;
     image?: string;
     prefer?: ItemsPatchPreferEnum;
     items?: Items;
@@ -91,8 +103,24 @@ export class ItemsApi extends runtime.BaseAPI {
             queryParameters['type'] = requestParameters['type'];
         }
 
+        if (requestParameters['mana'] != null) {
+            queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['equipmentSlot'] != null) {
+            queryParameters['equipment_slot'] = requestParameters['equipmentSlot'];
+        }
+
+        if (requestParameters['tier'] != null) {
+            queryParameters['tier'] = requestParameters['tier'];
+        }
+
         if (requestParameters['weight'] != null) {
             queryParameters['weight'] = requestParameters['weight'];
+        }
+
+        if (requestParameters['goldValue'] != null) {
+            queryParameters['gold_value'] = requestParameters['goldValue'];
         }
 
         if (requestParameters['image'] != null) {
@@ -145,8 +173,24 @@ export class ItemsApi extends runtime.BaseAPI {
             queryParameters['type'] = requestParameters['type'];
         }
 
+        if (requestParameters['mana'] != null) {
+            queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['equipmentSlot'] != null) {
+            queryParameters['equipment_slot'] = requestParameters['equipmentSlot'];
+        }
+
+        if (requestParameters['tier'] != null) {
+            queryParameters['tier'] = requestParameters['tier'];
+        }
+
         if (requestParameters['weight'] != null) {
             queryParameters['weight'] = requestParameters['weight'];
+        }
+
+        if (requestParameters['goldValue'] != null) {
+            queryParameters['gold_value'] = requestParameters['goldValue'];
         }
 
         if (requestParameters['image'] != null) {
@@ -231,8 +275,24 @@ export class ItemsApi extends runtime.BaseAPI {
             queryParameters['type'] = requestParameters['type'];
         }
 
+        if (requestParameters['mana'] != null) {
+            queryParameters['mana'] = requestParameters['mana'];
+        }
+
+        if (requestParameters['equipmentSlot'] != null) {
+            queryParameters['equipment_slot'] = requestParameters['equipmentSlot'];
+        }
+
+        if (requestParameters['tier'] != null) {
+            queryParameters['tier'] = requestParameters['tier'];
+        }
+
         if (requestParameters['weight'] != null) {
             queryParameters['weight'] = requestParameters['weight'];
+        }
+
+        if (requestParameters['goldValue'] != null) {
+            queryParameters['gold_value'] = requestParameters['goldValue'];
         }
 
         if (requestParameters['image'] != null) {

@@ -265,7 +265,9 @@ export default function App() {
           })
         );
 
-        const rock = items.find(i => i.name === "Rock");
+        // Select a random item for enemy to carry
+        const i = Math.floor(Math.random() * items.length);
+        const item = items[i];
 
         const id = Math.floor(Math.random() * 1000000);
         const enemyAncestry = ancestries.find(a => a.name === "Goblin");
@@ -293,7 +295,7 @@ export default function App() {
           intelligence: 20 + enemyAncestry?.bonusIntelligence,
           wisdom: 20 + enemyAncestry?.bonusWisdom,
           charisma: 10 + enemyAncestry?.bonusCharisma,
-          inventory: rock ? [rock.id] : [], // safe guard
+          inventory: item ? [item.id] : [], // safe guard
         };
 
         setEnemies(prev => [...prev, enemy]);
@@ -493,7 +495,13 @@ export default function App() {
 
     const abilityFunctions = {
         "Dig": () => {
-            const item = items.find(item => item.name === "Rock")
+            const coin = Math.random();
+            const itemName = coin > 0.5 ? "Rock " : "Stick";
+            const item = items.find(item => item.name === itemName);
+            if (!item) {
+                console.warn(`${itemName} item not found in database`);
+                return;
+            }
             spawnItemOnMap(item.id, location.coords.latitude + (Math.random() - 0.5) * 0.001, location.coords.longitude + (Math.random() - 0.5) * 0.001);
             setFloatingTexts(prev => [
               ...prev,

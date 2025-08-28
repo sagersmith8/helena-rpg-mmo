@@ -49,7 +49,31 @@ export interface Items {
      * @type {number}
      * @memberof Items
      */
+    mana?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Items
+     */
+    equipmentSlot?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Items
+     */
+    tier?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Items
+     */
     weight?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Items
+     */
+    goldValue?: number;
     /**
      * 
      * @type {string}
@@ -81,7 +105,11 @@ export function ItemsFromJSONTyped(json: any, ignoreDiscriminator: boolean): Ite
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'type': json['type'] == null ? undefined : json['type'],
+        'mana': json['mana'] == null ? undefined : json['mana'],
+        'equipmentSlot': json['equipment_slot'] == null ? undefined : json['equipment_slot'],
+        'tier': json['tier'] == null ? undefined : json['tier'],
         'weight': json['weight'] == null ? undefined : json['weight'],
+        'goldValue': json['gold_value'] == null ? undefined : json['gold_value'],
         'image': json['image'] == null ? undefined : json['image'],
     };
 }
@@ -101,7 +129,11 @@ export function ItemsToJSONTyped(value?: Items | null, ignoreDiscriminator: bool
         'name': value['name'],
         'description': value['description'],
         'type': value['type'],
+        'mana': value['mana'],
+        'equipment_slot': value['equipmentSlot'],
+        'tier': value['tier'],
         'weight': value['weight'],
+        'gold_value': value['goldValue'],
         'image': value['image'],
     };
 }
