@@ -6,7 +6,12 @@ node_modules/
 # idea
 .idea/
 
+# db
+db_data
+
 # Api
+api/
+openapi3.json
 
 # Expo
 .expo/
