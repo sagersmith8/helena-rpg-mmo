@@ -294,7 +294,28 @@ export default function App() {
 
         const id = Math.floor(Math.random() * 1000000);
         const enemyAncestry = ancestries.find(a => a.name === "Goblin");
-        const enemyHealth = 10 + (enemyAncestry?.bonusConstitution ?? 0);
+        const enemyLevel = character ? Math.max(1, character.level + Math.floor(Math.random() * 5) - 1) : 1; // ±5 level from character, min 1
+        // distribute stats 1 point per level above 1
+        const extraStats = {
+            strength: 0,
+            dexterity: 0,
+            constitution: 0,
+            intelligence: 0,
+            wisdom: 0,
+            charisma: 0,
+        }
+        for (let lvl = 2; lvl <= enemyLevel; lvl++) {
+            const statChoice = Math.floor(Math.random() * 6);
+            switch (statChoice) {
+                case 0: extraStats.strength++; break;
+                case 1: extraStats.dexterity++; break;
+                case 2: extraStats.constitution++; break;
+                case 3: extraStats.intelligence++; break;
+                case 4: extraStats.wisdom++; break;
+                case 5: extraStats.charisma++; break;
+            }
+        }
+        const enemyHealth = 10 + (enemyAncestry?.bonusConstitution ?? 0) + enemyLevel + extraStats.constitution; // base 10 + con + level + extra
 
         const enemy = {
           id,
@@ -308,16 +329,16 @@ export default function App() {
           mana: 0,
           maxMana: 0,
           experience: 10,
-          level: 1,
+          level: enemyLevel, // ±5 level from character
           ancestry: enemyAncestry?.id,
           ac: Math.floor(Math.random() * 2) + 3, // 3–5
-          speed: 30 + enemyAncestry?.bonusSpeed,
-          strength: 10 + enemyAncestry?.bonusStrength,
-          dexterity: 10 + enemyAncestry?.bonusDexterity,
-          constitution: 10 + enemyAncestry?.bonusConstitution,
-          intelligence: 20 + enemyAncestry?.bonusIntelligence,
-          wisdom: 20 + enemyAncestry?.bonusWisdom,
-          charisma: 10 + enemyAncestry?.bonusCharisma,
+          speed: 30 + enemyAncestry?.bonusSpeed + enemyLevel,
+          strength: 10 + enemyAncestry?.bonusStrength + extraStats.strength,
+          dexterity: 10 + enemyAncestry?.bonusDexterity + extraStats.dexterity,
+          constitution: 10 + enemyAncestry?.bonusConstitution + extraStats.constitution,
+          intelligence: 20 + enemyAncestry?.bonusIntelligence + extraStats.intelligence,
+          wisdom: 20 + enemyAncestry?.bonusWisdom + extraStats.wisdom,
+          charisma: 10 + enemyAncestry?.bonusCharisma + extraStats.charisma,
           inventory: item ? [item.id] : [], // safe guard
         };
 
@@ -828,7 +849,7 @@ export default function App() {
       console.log("Spawning enemy timer triggered");
       spawnEnemy(location.coords.latitude + (Math.random() - 0.5) * 0.001,
                              location.coords.longitude + (Math.random() - 0.5) * 0.001); // pass latest location directly
-    }, 2 * 60 * 1000);
+    }, 1 * 20 * 1000); // every 20 seconds for testing, change to 5*60*1000 (5 minutes) later
 
       const smoothStepInterval = 50; // ms per micro-step
       const microSteps = 100;
@@ -896,7 +917,7 @@ export default function App() {
           location.coords.latitude + (Math.random() - 0.5) * 0.001,
           location.coords.longitude + (Math.random() - 0.5) * 0.001
         );
-      }, 2 * 60 * 1000);
+      }, 1 * 20 * 1000); // every 20 seconds for testing, change to 2*60*1000 (2 minutes) later
 
       return () => {
         clearInterval(enemyAnimTimer);
@@ -1351,7 +1372,7 @@ export default function App() {
                 </View>
               </Modal>
 
-        {/* Equipment Modal */}
+        {/* Inventory Modal */}
         <Modal visible={isInventoryOpen} transparent={true} animationType="slide">
           <View style={styles.modalContainer}>
             {/* Close Button */}
@@ -1365,6 +1386,7 @@ export default function App() {
                     <View style={styles.selectedItemContainer}>
                         <Text style={styles.selectedItemTitle}>{selectedItem.name}</Text>
                         <Image source={{ uri: imageHost + itemData.image}} style={styles.selectedItemImage} />
+                        <Text style={styles.selectedItemTitle}>{itemData.name}</Text>
                         <Text style={styles.selectedItemDescription}>{itemData.description}</Text>
                         <Text style={styles.selectedItemQuantity}>Quantity: {selectedItem.quantity}</Text>
                         {itemData.type === "consumable" && (

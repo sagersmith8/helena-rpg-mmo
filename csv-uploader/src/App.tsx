@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi } from "../../api/index"; // Adjust the import path as needed
-
 type CsvRow = Record<string, string>;
 const configuration = new Configuration({basePath: 'http://98.127.121.74:3000'});
 const API = {
@@ -45,11 +44,31 @@ function App() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        console.log("Parsed CSV:", results.data);
-        setJsonData(results.data);
+        const camelRows = results.data.map(row => keysToCamel(row));
+        console.log("Parsed CSV:", camelRows);
+        setJsonData(camelRows);
       },
     });
   };
+
+  function toCamelCase(str: string) {
+    return str.replace(/([-_][a-z])/gi, (match) =>
+      match.toUpperCase().replace(/[-_]/g, "")
+    );
+  }
+
+  function keysToCamel<T>(obj: any): T {
+    if (Array.isArray(obj)) {
+      return obj.map((v) => keysToCamel(v)) as any;
+    } else if (obj !== null && obj.constructor === Object) {
+      return Object.keys(obj).reduce((acc: any, key) => {
+        acc[toCamelCase(key)] = keysToCamel(obj[key]);
+        return acc;
+      }, {});
+    }
+    return obj;
+  }
+
 
   const handleUpload = async () => {
     if (!jsonData) return;
@@ -58,7 +77,7 @@ function App() {
       setStatus(`Uploading ${selectedApi}...`);
 
       for (const row of jsonData) {
-        const item: Items = JSON.parse(JSON.stringify(row));
+        const item = JSON.parse(JSON.stringify(row));
 
         // Only check for duplicates if we're on items
         if (

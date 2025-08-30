@@ -3,11 +3,18 @@
 # dependencies
 node_modules/
 
+# idea
+.idea/
+
+# Api
+
 # Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+android/
+ios/
 
 # Native
 .kotlin/
