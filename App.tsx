@@ -46,6 +46,7 @@ export default function App() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [isEquipmentOpen, setEquipmentOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Items | null>(null);
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [character, setCharacter] = useState<Characters | null>(null);
   const [name, setName] = useState(null);
@@ -1357,22 +1358,55 @@ export default function App() {
             <TouchableOpacity onPress={() => setInventoryOpen(false)} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
-
-            {/* Scrollable Grid */}
-            <ScrollView contentContainerStyle={styles.gridContainer}>
-              {inventory.map((item, index) => {
-                const itemData = items.find((i) => i.id === item.itemId);
+            {selectedItem && (() => {
+                const itemData = items.find(i => i.id === selectedItem.itemId);
                 if (!itemData) return null;
                 return (
-                  <TouchableOpacity style={styles.statBlock} key={item.itemId} onPress={() => {item.equipped = !item.equipped
-                                                                                               setInventory([...inventory]);}}>
-                    <Image source={{ uri: imageHost + itemData.image}} style={styles.slotIcon} />
-                    <Text style={styles.statLabel}>{item.name}</Text>
-                    <Text style={styles.statValue}>{item.quantity}</Text>
-                  </TouchableOpacity>
+                    <View style={styles.selectedItemContainer}>
+                        <Text style={styles.selectedItemTitle}>{selectedItem.name}</Text>
+                        <Image source={{ uri: imageHost + itemData.image}} style={styles.selectedItemImage} />
+                        <Text style={styles.selectedItemDescription}>{itemData.description}</Text>
+                        <Text style={styles.selectedItemQuantity}>Quantity: {selectedItem.quantity}</Text>
+                        {itemData.type === "consumable" && (
+                            <TouchableOpacity style={styles.useButton} onPress={() => {
+                                // Use consumable
+                                if (itemData.effect === "heal") {
+                                    const healAmount = itemData.effectAmount || 0;
+                                    setCharacter(prev => {
+                                        if (!prev) return prev;
+                                        const newHealth = Math.min(prev.health + healAmount, prev.maxHealth);
+                                        return { ...prev, health: newHealth };
+                                    });
+                                    // Decrease quantity or remove from inventory
+                                    if (selectedItem.quantity > 1) {
+                                        selectedItem.quantity -= 1;
+                                        setInventory([...inventory]);
+                                    } else {
+                                        setInventory(inventory.filter(i => i.itemId !== selectedItem.itemId));
+                                        setSelectedItem(null);
+                                    }
+                                }
+                            }}>
+                                <Text style={styles.useButtonText}>Use</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 );
-              })}
-            </ScrollView>
+            })()}
+            {/* Inventory Items */}
+                <ScrollView contentContainerStyle={styles.gridContainer}>
+                  {inventory.map((item, index) => {
+                    const itemData = items.find((i) => i.id === item.itemId);
+                    if (!itemData) return null;
+                    return (
+                      <TouchableOpacity style={styles.statBlock} key={item.itemId} onPress={() => setSelectedItem(item)}>
+                        <Image source={{ uri: imageHost + itemData.image}} style={styles.slotIcon} />
+                        <Text style={styles.statLabel}>{item.name}</Text>
+                        <Text style={styles.statValue}>{item.quantity}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
           </View>
         </Modal>
 
@@ -1438,6 +1472,47 @@ const styles = StyleSheet.create({
       backgroundColor: "rgba(0, 0, 0, 0)",
       padding: 10,
     },
+    selectedItemContainer: {
+        backgroundColor: "#3a3835",
+        borderWidth: 2,
+        borderColor: "#6b4c35", // bronze/gold border
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 16,
+        alignItems: 'center',
+        },
+    selectedItemTitle: {
+        fontSize: 20,
+        fontFamily: "Cinzel-Bold",
+        color: "#e6d3b3",
+        marginBottom: 8,
+      },
+    selectedItemImage: {
+        width: 100,
+        height: 100,
+        marginBottom: 8,
+      },
+    selectedItemDescription: {
+        fontSize: 16,
+        color: "#d7c4a3",
+        marginBottom: 8,
+        textAlign: 'center',
+      },
+    selectedItemQuantity: {
+        fontSize: 14,
+        color: "#aaa",
+        marginBottom: 8,
+      },
+    useButton: {
+        backgroundColor: "#4CAF50",
+        padding: 10,
+        borderRadius: 8,
+      },
+    useButtonText: {
+        color: "#fff",
+        fontSize: 16,
+        textAlign: "center",
+      },
 detailsHudContainer: {
   position: "absolute",
   top: 20,
