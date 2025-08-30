@@ -7,7 +7,6 @@ import * as SecureStore from 'expo-secure-store';
 import Knapsack from "./assets/icons/svg/knapsack.svg";
 import AbdominalArmor from "./assets/icons/svg/abdominal-armor.svg";
 import SwordInStone from "./assets/icons/svg/battle-gear.svg";
-import Lyre from "./assets/icons/svg/lyre.svg";
 
 import { AbilitiesApi, Abilities, AncestriesApi, Ancestries, CharactersApi, Characters, CharacterSkillsApi, CharacterSkills, Configuration, ClassesApi, Classes, BackgroundsApi, Backgrounds, InventoryApi, Inventory, ItemsApi, Items, SkillsApi, Skills} from './api/index';
 
@@ -55,15 +54,16 @@ export default function App() {
   const [characterClass, setCharacterClass] = useState<Classes | null>(null);
   const [abilities, setAbilities] = useState({ strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 });
   const [feats, setFeats] = useState([]);
+  const [detailsHudExpanded, setDetailsHudExpanded] = useState(false);
   const [equipment, setEquipment] = useState([]);
+  const [selectedInventoryItem, setSelectedInventoryItem] = useState<Items | null>(null);
   const [floatingTexts, setFloatingTexts] = useState<
     { id: string; lat: number; lng: number; text: string; color: string, expiresAt: number }[]
   >([]);
 
 
-  const imageHost = "http://10.46.235.105:4000/";
-  //const config = new Configuration({basePath: 'https://postgrest.sageneilsmith.me'});
-  const config = new Configuration({basePath: 'http://10.46.235.105:3000'});
+  const imageHost = "http://98.127.121.74:3001/";
+  const config = new Configuration({basePath: 'http://98.127.121.74:3000'});
   const classesApi = new ClassesApi(config);
   const [characterClasses, setCharacterClasses] = useState<Classes[]>([]);
 
@@ -127,12 +127,34 @@ export default function App() {
         const existingItem = inventory.find(i => i.itemId === itemOnMap?.itemId);
 
         if (existingItem) {
-            existingItem.quantity += 1;
-            setInventory([...inventory]);
+            const newQuantity = existingItem.quantity + 1;
+
+            // update state
+            setInventory(inventory.map(i =>
+                i.itemId === existingItem.itemId
+                    ? { ...i, quantity: newQuantity }
+                    : i
+            ));
+
             inventoryApi.inventoryPatch({
-                inventory: existingItem,
-            }).catch(err => console.error("Failed to update inventory:", err));
-        } else {
+               characterId: `eq.${existingItem.characterId}`,
+               itemId: `eq.${existingItem.itemId}`,
+               inventory: { ...existingItem, quantity: newQuantity },
+             }).catch(async (err: any) => {
+               console.error("Failed to update inventory:", err);
+
+               if (err.response) {
+                 console.error("Status:", err.response.status);
+                 try {
+                   const body = await err.response.text();
+                   console.error("Body:", body);
+                 } catch (parseErr) {
+                   console.error("Could not parse error body:", parseErr);
+                 }
+               }
+             });
+        }
+         else {
             const newItem: Inventory = {
                 characterId: character?.id ?? 0, // Use character ID if available
                 itemId: itemOnMap.itemId,
@@ -236,7 +258,7 @@ export default function App() {
             console.warn("No location available to spawn enemy");
             return;
         }
-        const radius = 100; // meters
+        const radius = Math.floor(Math.random() * 50) + 50; // 50-100m
         const circlePoints = generateCirclePoints(
           latitude,
           longitude,
@@ -427,10 +449,20 @@ export default function App() {
             const nextLevelExp = fibbonaci((character.level ?? 1) + 1);
             if (newExp >= nextLevelExp) {
                 const newLevel = (character.level ?? 1) + 1;
-                const newMaxHealth = calculateHP() + (newLevel - 1) * 5;
-                const newMaxMana = calculateMana() + (newLevel - 1) * 5;
+                const newMaxHealth = calculateHP() + 1;
+                const newMaxMana = calculateMana() + 1;
                 // Alert with new values
-                alert(`Level Up! You are now level ${newLevel}!\nMax Health: ${newMaxHealth}\nMax Mana: ${newMaxMana}`);
+                setFloatingTexts(prev => [
+                    ...prev,
+                    {
+                        id: `${Date.now()}`,
+                        lat: character.latitude + (Math.random() - 0.5) * 0.0003,
+                        lng: character.longitude + (Math.random() - 0.5) * 0.0003,
+                        text: `Level ${newLevel}`,
+                        color: "gold",
+                        expiresAt: Date.now() + 2000, // 2 seconds
+                    },
+                ]);
                 const updatedChar = character
                   ? {
                       ...character,
@@ -446,8 +478,28 @@ export default function App() {
                 setCharacter(updatedChar);
 
                 charactersApi.charactersPatch({
-                  characters: updatedChar,
-                }).catch(err => console.error("Failed to update character level:", err));
+                  id: `eq.${character.id}`,
+                  characters: {
+                    level: newLevel,
+                    experience: newExp,
+                    maxHealth: newMaxHealth,
+                    health: newMaxHealth,
+                    maxMana: newMaxMana,
+                    mana: newMaxMana,
+                  },
+                }).catch(async (err: any) => {
+                   console.error("Failed to update character level:", err);
+
+                   if (err.response) {
+                     console.error("Status:", err.response.status);
+                     try {
+                       const body = await err.response.text();
+                       console.error("Body:", body);
+                     } catch (parseErr) {
+                       console.error("Could not parse error body:", parseErr);
+                     }
+                   }
+                 });
             } else {
                 const updatedChar = character
                   ? {
@@ -459,8 +511,23 @@ export default function App() {
                 setCharacter(updatedChar);
 
                 charactersApi.charactersPatch({
-                  characters: updatedChar,
-                }).catch(err => console.error("Failed to update character level:", err));
+                  id: `eq.${character.id}`,
+                  characters: {
+                    experience: newExp,
+                  },
+                }).catch(async (err: any) => {
+                   console.error("Failed to update character level:", err);
+
+                   if (err.response) {
+                     console.error("Status:", err.response.status);
+                     try {
+                       const body = await err.response.text();
+                       console.error("Body:", body);
+                     } catch (parseErr) {
+                       console.error("Could not parse error body:", parseErr);
+                     }
+                   }
+                 });
             }
         } else {
             console.log("Character defeated!");
@@ -502,7 +569,7 @@ export default function App() {
                 console.warn(`${itemName} item not found in database`);
                 return;
             }
-            spawnItemOnMap(item.id, location.coords.latitude + (Math.random() - 0.5) * 0.001, location.coords.longitude + (Math.random() - 0.5) * 0.001);
+            spawnItemOnMap(item.id, location.coords.latitude + (Math.random() - 0.5) * 0.0005, location.coords.longitude + (Math.random() - 0.5) * 0.0005);
             setFloatingTexts(prev => [
               ...prev,
               {
@@ -515,8 +582,53 @@ export default function App() {
               },
             ]);
         },
-        "Gather Herbs": () => null, // Placeholder
-        "Craft Item": () => null, // Placeholder
+        "Craft Item": () => {
+            console.log("Crafting item...");
+            // items withing my speed range get added to my inventory
+            const speed = character.speed
+            if (!location || !character || !speed) {
+                console.warn("No location or character speed available for gathering");
+                return;
+            }
+            const nearbyItems = itemsOnMap.filter(i => {
+                const dist = getDistanceMeters(
+                    { lat: i.lat, lon: i.lng },
+                    { lat: location.coords.latitude, lon: location.coords.longitude }
+                );
+                return dist <= speed;
+            });
+            if (nearbyItems.length === 0) {
+                console.log("No items nearby to gather");
+                setFloatingTexts(prev => [
+                  ...prev,
+                  {
+                    id: `${Date.now()}`,
+                  lat: location.coords.latitude + (Math.random() - 0.5) * 0.0003,
+                  lng: location.coords.longitude + (Math.random() - 0.5) * 0.0003,
+                    text: "Nothing found",
+                    color: "gray",
+                    expiresAt: Date.now() + 1000, // 1 second
+                  },
+                ]);
+                return;
+            }
+            nearbyItems.forEach(i => addToInventory(i.id));
+            setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${Date.now()}`,
+              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0003,
+              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0003,
+                text: `+${nearbyItems.length} item`,
+                color: "green",
+                expiresAt: Date.now() + 1000, // 1 second
+              },
+            ]);
+            setItemsOnMap(prev => prev.filter(i => !nearbyItems.some(ni => ni.id === i.id)));
+        },
+        "Gather Herbs": () => {
+            console.log("Gathering herbs...");
+        }, // Placeholder
         "Punch": async () => {
             console.log("Attempting to punch...");
             const ability = abilitiesList.find(ab => ab.name === "Punch");
@@ -980,7 +1092,7 @@ export default function App() {
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        region={region}
+        initialRegion={region} // switch to region if we want to snap to users locations
         style={styles.map}
           customMapStyle={[
             {
@@ -1016,8 +1128,8 @@ export default function App() {
             }
           ]}
         provider={PROVIDER_GOOGLE}
-        scrollEnabled={false}
-        zoomEnabled={false}
+        scrollEnabled={true} // enable map scrolling
+        zoomEnabled={true} // enable zoom
         rotateEnabled={true}
         showsUserLocation={false}
       >
@@ -1033,7 +1145,7 @@ export default function App() {
                   padding: 2,
                 }}
               >
-                <Text style={{ color: ft.color, fontWeight: "bold", fontSize: 12 }}>
+                <Text style={{ color: ft.color, fontWeight: "bold", fontSize: 10 }}>
                   {ft.text}
                 </Text>
               </View>
@@ -1050,7 +1162,7 @@ export default function App() {
           onPress={() => setTargetedEnemy(null)} // Deselect enemy on character marker press
         >
             <View style={{ width: 20, height: 20 }}>
-                <Lyre width={20} height={20}/>
+                <Image source={{ uri: imageHost + characterClasses.find((c) => c.id == character.classId).image}} width={20} height={20}/>
             </View>
         </Marker>
         {itemsOnMap.map((item, index) => {
@@ -1062,7 +1174,6 @@ export default function App() {
                     coordinate={{ latitude: item.lat, longitude: item.lng }}
                     title={itemData.name}
                     description={itemData.description}
-                    onPress={() => addToInventory(item.id)}
                 >
                     <View style={{ width: 20, height: 20 }}>
                         <Image source={{ uri: imageHost + itemData.image }} style={{ width: 20, height: 20 }} />
@@ -1146,6 +1257,46 @@ export default function App() {
                     <Text>XP: {character.experience}/{fibbonaci(character.level +1)}</Text>
                 </View>
         </View>
+          <TouchableOpacity activeOpacity={0.8}
+                  style={styles.detailsHudContainer}
+                  onPress={() => setDetailsHudExpanded(!detailsHudExpanded)}>
+            <Text style={styles.detailsHudTextName}>{character.name}</Text>
+            <Text style={styles.detailsHudTextTitle}>Level {character.level}</Text>
+
+            {detailsHudExpanded && (
+                <View>
+                    <View style={styles.detailsHudDivider} />
+                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                        <Image source={{ uri: imageHost + ancestries.find((c) => c.id == character.ancestry)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Text style={styles.detailsHudTextStat}>
+                          {ancestries.find((c) => c.id == character.ancestry)?.name}
+                        </Text>
+                    </View>
+                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                        <Image source={{ uri: imageHost + backgrounds.find((c) => c.id == character.background)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Text style={styles.detailsHudTextStat}>
+                      {backgrounds.find((c) => c.id == character.background)?.name}
+                    </Text>
+                    </View>
+                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                        <Image source={{ uri: imageHost + characterClasses.find((c) => c.id == character.classId)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Text style={styles.detailsHudTextStat}>
+                          {characterClasses.find((c) => c.id == character.classId)?.name}
+                        </Text>
+                    </View>
+                    <Text style={styles.detailsHudTextStat}>Gold: {character.gold}</Text>
+
+                    <View style={styles.detailsHudDivider} />
+                    <Text style={styles.detailsHudTextStat}>AC {character.ac ?? 10}</Text>
+                    <Text style={styles.detailsHudTextStat}>STR {character.strength}</Text>
+                    <Text style={styles.detailsHudTextStat}>DEX {character.dexterity}</Text>
+                    <Text style={styles.detailsHudTextStat}>CON {character.constitution}</Text>
+                    <Text style={styles.detailsHudTextStat}>INT {character.intelligence}</Text>
+                    <Text style={styles.detailsHudTextStat}>WIS {character.wisdom}</Text>
+                    <Text style={styles.detailsHudTextStat}>CHA {character.charisma}</Text>
+                </View>
+            )}
+          </TouchableOpacity>
 
         <View style={styles.equipmentContainer}>
           <TouchableOpacity style={styles.statBlock} onPress={() => setEquipmentOpen(true)}>
@@ -1166,7 +1317,6 @@ export default function App() {
                   {/* Equipment Items */}
                       <View style={styles.humanContainer}>
                         <View style={styles.row}>
-
                         </View>
                         <View style={styles.row}>
 
@@ -1181,10 +1331,21 @@ export default function App() {
 
                       {/* Scrollable Grid */}
                       <ScrollView contentContainerStyle={styles.gridContainer}>
-                        {Array.from({ length: 70 }, (item, index) => (
-                          <TouchableOpacity key={index} style={styles.slotIcon}>
-                          </TouchableOpacity>
-                        ))}
+                        {inventory.filter(i => {
+                          const itemData = items.find(it => it.id === i.itemId);
+                          return itemData && (itemData.type === "weapon" || itemData.type === "armor");
+                        }).map((item, index) => {
+                          const itemData = items.find((i) => i.id === item.itemId);
+                          if (!itemData) return null;
+                          return (
+                            <TouchableOpacity style={styles.statBlock} key={item.itemId} onPress={() => {item.equipped = !item.equipped
+                                                                                                         setInventory([...inventory]);}}>
+                              <Image source={{ uri: imageHost + itemData.image}} style={styles.slotIcon} />
+                              <Text style={styles.statLabel}>{item.name}</Text>
+                              <Text style={styles.statValue}>{item.quantity}</Text>
+                            </TouchableOpacity>
+                          );
+                        })}
                       </ScrollView>
                 </View>
               </Modal>
@@ -1251,6 +1412,8 @@ export default function App() {
             if (!item.equipped) return null;
             const itemData = items.find((i) => i.id === item.itemId);
             if (!itemData) return null;
+            // if item.type is "weapon", "armor" skip
+            if (itemData.type === "weapon" || itemData.type === "armor") return null;
 
             return (
               <TouchableOpacity key={item.itemId} style={styles.statBlock} >
@@ -1275,6 +1438,42 @@ const styles = StyleSheet.create({
       backgroundColor: "rgba(0, 0, 0, 0)",
       padding: 10,
     },
+detailsHudContainer: {
+  position: "absolute",
+  top: 20,
+  right: 20,
+  width: "40%",
+  backgroundColor: "rgba(20, 20, 20, 0.85)", // deep dark overlay
+  borderRadius: 12,
+  borderWidth: 2,
+  borderColor: "rgba(180, 160, 100, 0.8)", // antique gold/bronze
+  padding: 16,
+  shadowColor: "#000",
+  shadowOpacity: 0.7,
+  shadowOffset: { width: 4, height: 4 },
+  shadowRadius: 6,
+},
+detailsHudTextName: {
+  fontSize: 20,
+  fontWeight: "700",
+  color: "#e0d6b4", // parchment gold
+  marginBottom: 8,
+},
+detailsHudTextTitle: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#d4c48f",
+},
+detailsHudTextStat: {
+  fontSize: 13,
+  color: "#c9c9c9", // muted silver
+  marginVertical: 1,
+},
+detailsHudDivider: {
+  height: 1,
+  backgroundColor: "rgba(255,255,255,0.1)",
+  marginVertical: 6,
+},
   weaponsHudContainerudContainer: {
       position: "absolute",
       bottom: 0,
@@ -1369,6 +1568,13 @@ const styles = StyleSheet.create({
        padding: 12,
        marginBottom: 16,
      },
+     closeButton: {
+         alignSelf: "flex-end",
+         backgroundColor: "#6b4c35",
+         padding: 10,
+         borderRadius: 8,
+         marginBottom: 10,
+      },
      sectionTitle: {
        fontSize: 20,
        fontFamily: "Cinzel-Bold",

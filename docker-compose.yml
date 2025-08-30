@@ -36,4 +36,4 @@ services:
     volumes:
       - ./assets/icons/png:/usr/share/nginx/html:ro
     ports:
-      - "4000:80"
+      - "3001:80"
