@@ -4,11 +4,11 @@
     "slug": "helena-rpg-mmo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icons/icon_1024.png",
+    "icon": "./assets/icons/1024.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icons/icon_2732.png",
+      "image": "./assets/icons/1024.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/icon_432.png",
+        "foregroundImage": "./assets/icons/512.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,

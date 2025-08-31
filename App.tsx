@@ -3,8 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView, TextInput,
 import MapView, { Marker, PROVIDER_GOOGLE, Circle, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import * as SecureStore from 'expo-secure-store';
-import Knapsack from "./assets/icons/svg/knapsack.svg";
-import AbdominalArmor from "./assets/icons/svg/abdominal-armor.svg";
 import SwordInStone from "./assets/icons/svg/battle-gear.svg";
 
 import { AbilitiesApi, AncestriesApi, CharactersApi, CharacterSkillsApi, Configuration, ClassesApi, BackgroundsApi, InventoryApi, ItemsApi, SkillsApi} from './api/index';
@@ -1469,7 +1467,7 @@ export default function App() {
       return (
         <View style={styles.container}>
           <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-            <SwordInStone width={100} height={100} />
+            <Image source={{ uri: imageHost + "plain-dagger.png"}} width={100} height={100} />
           </View>
         </View>
       );
@@ -1700,10 +1698,10 @@ export default function App() {
 
         <View style={styles.equipmentContainer}>
           <TouchableOpacity style={styles.statBlock} onPress={() => setEquipmentOpen(true)}>
-          <AbdominalArmor style={styles.slotIcon} />
+          <Image source={{ uri: imageHost + "abdominal-armor.png"}} style={styles.slotIcon} />
         </TouchableOpacity>
             <TouchableOpacity style={styles.statBlock} onPress={() => setInventoryOpen(true)}>
-                <Knapsack style={styles.slotIcon} />
+                <Image source={{ uri: imageHost + "knapsack.png"}} style={styles.slotIcon} />
             </TouchableOpacity>
         </View>
 
