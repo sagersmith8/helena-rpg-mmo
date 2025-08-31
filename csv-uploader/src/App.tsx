@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi } from "../../api/index"; // Adjust the import path as needed
-import type { Ability, Ancestry, Background, Character, CharacterSkill, Class, Item, Skill } from "../../api/index"; // Adjust the import path as needed
+import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi, InventoryApi } from "../../api/index"; // Adjust the import path as needed
+import type { Ability, Ancestry, Background, Character, CharacterSkill, Class, Item, Skill, Inventory } from "../../api/index"; // Adjust the import path as needed
 type CsvRow = Record<string, string>;
 const configuration = new Configuration({basePath: 'http://98.127.121.74:3000'});
 const API = {
@@ -13,6 +13,7 @@ const API = {
     classes: new ClassesApi(configuration),
     items: new ItemsApi(configuration),
     skills: new SkillsApi(configuration),
+    inventory: new InventoryApi(configuration),
 }
 const API_TYPES = {
     abilities: {} as Ability,
@@ -23,6 +24,7 @@ const API_TYPES = {
     classes: {} as Class,
     items: {} as Item,
     skills: {} as Skill,
+    inventory: {} as Inventory,
 }
 
 function App() {
