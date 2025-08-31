@@ -17,7 +17,7 @@ create table items (
   description text,
   type text check (type in ('weapon','armor','consumable','magic', 'resource', 'quest')),
   mana int default 0, -- mana provided if consumable
-  equipment_slot text check (equipment_slot in ('head','chest','legs','feet','hands','either_hand', 'main_hand','offhand','ring','amulet')) null,
+  equipment_slot text check (equipment_slot in ('', 'head','chest','legs','feet','hands','either_hand', 'main_hand','offhand','ring','amulet')) null,
   bonus_damage int default 0, -- for weapons
   bonus_damage_change int default 0, -- is a percentage chance
   repairable boolean default false,

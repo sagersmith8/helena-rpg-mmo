@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi } from "../../api/index"; // Adjust the import path as needed
+import type { Ability, Ancestry, Background, Character, CharacterSkill, Class, Item, Skill } from "../../api/index"; // Adjust the import path as needed
 type CsvRow = Record<string, string>;
 const configuration = new Configuration({basePath: 'http://98.127.121.74:3000'});
 const API = {
@@ -12,6 +13,16 @@ const API = {
     classes: new ClassesApi(configuration),
     items: new ItemsApi(configuration),
     skills: new SkillsApi(configuration),
+}
+const API_TYPES = {
+    abilities: {} as Ability,
+    ancestries: {} as Ancestry,
+    backgrounds: {} as Background,
+    characters: {} as Character,
+    characterSkills: {} as CharacterSkill,
+    classes: {} as Class,
+    items: {} as Item,
+    skills: {} as Skill,
 }
 
 function App() {
@@ -30,6 +41,15 @@ function App() {
         setStatus(`Fetched ${res?.length ?? 0} ${selectedApi} ✅`);
       } catch (err) {
         console.error(`Failed to fetch ${selectedApi}:`, err);
+       if (err.response) {
+         console.error("Status:", err.response.status);
+         try {
+           const body = await err.response.text();
+           console.error("Body:", body);
+         } catch (parseErr) {
+           console.error("Could not parse error body:", parseErr);
+         }
+       }
         setStatus(`Failed to fetch ${selectedApi} ❌`);
       }
     };
@@ -77,15 +97,14 @@ function App() {
       setStatus(`Uploading ${selectedApi}...`);
 
       for (const row of jsonData) {
-        const item = JSON.parse(JSON.stringify(row));
+        const item = JSON.parse(JSON.stringify(row)) as typeof API_TYPES[typeof selectedApi];
 
         // Only check for duplicates if we're on items
         if (
-          selectedApi === "items" &&
           fetchedData.some((existing: any) => existing.name === item.name)
         ) {
           console.log(
-            `Item with name ${item.name} already exists, skipping upload.`
+            `${selectedApi} with name ${item.name} already exists, skipping upload.`
           );
           continue;
         }
