@@ -10,7 +10,6 @@ node_modules/
 db_data
 
 # Api
-api/
 openapi3.json
 
 # Expo
