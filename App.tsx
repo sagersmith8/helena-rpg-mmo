@@ -43,7 +43,9 @@ export default function App() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [isEquipmentOpen, setEquipmentOpen] = useState(false);
+  const [isSkillTreeOpen, setSkillTreeOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Items | null>(null);
+  const [selectedSkill, setSelectedSkill] = useState<CharacterSkills | null>(null);
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [character, setCharacter] = useState<Characters | null>(null);
   const [name, setName] = useState(null);
@@ -192,11 +194,11 @@ export default function App() {
     }
 
 
-    function calculateAbilities(newCharacterSkills: CharacterSkills[] = characterSkills, newInventory: Inventory[] = inventory, newAbilitiesList: Abilities[] = abilitiesList, newRequiredLevels: AbilitiesRequiredLevels[] = abilitiesRequiredLevels, newRequiredItems: AbilitiesRequiredItems[] = abilitiesRequiredItems) {
+    function calculateAbilities(newCharacterSkills: CharacterSkills[] = characterSkills, newInventory: Inventory[] = inventory, newAbilitiesList: Abilities[] = abilitiesList, newRequiredLevels: AbilitiesRequiredLevels[] = abilitiesRequiredLevels, newRequiredItems: AbilitiesRequiredItems[] = abilitiesRequiredItems, newItems: Items[] = items) {
       const inventoryByTree = newInventory.reduce<Record<string, number>>((acc, inv) => {
         if (inv.equippedSlot != null) return acc;
 
-        const foundItem = items.find((it) => it.id === inv.itemId);
+        const foundItem = newItems.find((it) => it.id === inv.itemId);
         if (!foundItem) return acc;
 
         const tree = foundItem.tree;
@@ -341,6 +343,48 @@ export default function App() {
       }
     }
 
+  function getEquippedItemsForMelee() {
+    const equipped: Items[] = [];
+
+    if (mainhandSlot) {
+      const mainReq = abilitiesRequiredItems.find((ari) => ari.itemTree === mainhandSlot.tree);
+      if (mainReq) equipped.push(mainhandSlot);
+    }
+
+    if (offhandSlot) {
+      const offReq = abilitiesRequiredItems.find((ari) => ari.itemTree === offhandSlot.tree);
+      if (offReq) equipped.push(offhandSlot);
+    }
+
+    return equipped;
+  }
+
+  function useMeleeAbility(abilityName: string) {
+    const ability = abilitiesList.find((ab) => ab.name === abilityName);
+    if (!ability) {
+      console.warn(`${abilityName} ability not found`);
+      return;
+    }
+
+    // Check if this ability requires melee skill
+    const reqLevel = abilitiesRequiredLevels.find((arl) => arl.abilityId === ability.id);
+    const meleeSkill = skills.find((s) => s.name === "Melee");
+    const hasMelee = meleeSkill && reqLevel && reqLevel.skillId === meleeSkill.id;
+
+    if (!hasMelee) {
+      console.warn(`${abilityName} does not require Melee or requirements not met`);
+      return;
+    }
+
+    // Target enemy
+    const enemy = enemies.find((e) => e.id === targetedEnemy) ?? null;
+
+    // Equipped items
+    const equippedItems = getEquippedItemsForMelee();
+
+    meleeAttack(character, ability, enemy, true, equippedItems);
+  }
+
 
   function calculateAttributes() {
     return {
@@ -390,8 +434,11 @@ export default function App() {
     }
 
     function fibbonaci(n: number): number {
+        if (n <= 1) {
+          return 1;
+        }
         let a = 0, b = 1, temp;
-        for (let i = 2; i <= n + 4; i++) {
+        for (let i = 2; i <= n ; i++) {
             temp = a + b;
             a = b;
             b = temp;
@@ -488,7 +535,7 @@ export default function App() {
       }
     }
 
-    function meleeAttack(attacker: Characters, ability: Abilities, defender: Characters, isCharacterAttack: boolean) {
+    function meleeAttack(attacker: Characters, ability: Abilities, defender: Characters, isCharacterAttack: boolean, items: Items[] = []) {
       console.log("Performing melee attack:", ability);
       if (!defender) {
        setFloatingTexts(prev => [
@@ -559,12 +606,28 @@ export default function App() {
       );
 
       const defenderAc = isCharacterAttack ? 1 : calculateAC();
+      var totalHits = 0;
       for (let i = 0; i < (ability?.hits ?? 1); i++) {
         const hitRoll = Math.floor(Math.random() * 20) + 1 + strengthModifier;
         if (hitRoll >= defenderAc) {
+          totalHits++;
           const maxDamage = ability?.damage ?? 6;
-          const damageRoll = Math.floor(Math.random() * maxDamage) + 1;
-          console.log(`Hit! Rolled ${damageRoll} damage`);
+          const baseDamage = Math.floor(Math.random() * maxDamage) + 1;
+
+          // --- apply item bonus damage ---
+          let bonusDamage = 0;
+          if (items && items.length > 0) {
+            for (const item of items) {
+              bonusDamage += item?.bonusDamage ?? 0;
+            }
+          }
+
+          const damageRoll = baseDamage + bonusDamage;
+
+          console.log(
+            `Hit! Rolled ${baseDamage} base + ${bonusDamage} bonus = ${damageRoll} damage`
+          );
+
           damage += damageRoll;
           anyHit = true;
           setFloatingTexts(prev => [
@@ -593,6 +656,62 @@ export default function App() {
             ]);
         }
       }
+
+      if (isCharacterAttack && totalHits > 0) {
+        const meleeSkill = skills.find((s) => s.name === "Melee");
+        const characterMeleeSkill = characterSkills.find((cs) => cs.skillId === meleeSkill?.id);
+        if (!meleeSkill || !characterMeleeSkill) return;
+
+        const newExp = (characterMeleeSkill.experience ?? 0) + 1;
+        const nextLevelExp = fibbonaci(characterMeleeSkill.level ?? 1);
+
+        let newCharacterMeleeSkill: CharacterSkills;
+
+        if (newExp >= nextLevelExp) {
+          const newLevel = (characterMeleeSkill.level ?? 1) + 1;
+          newCharacterMeleeSkill = {
+            ...characterMeleeSkill,
+            level: newLevel,
+            experience: newExp - nextLevelExp,
+          };
+        } else {
+          newCharacterMeleeSkill = {
+            ...characterMeleeSkill,
+            experience: newExp,
+          };
+        }
+
+        // Build the new skills array
+        const newCharacterSkills = characterSkills.map((cs) =>
+          cs.skillId === meleeSkill.id ? newCharacterMeleeSkill : cs
+        );
+
+        // Update state
+        setCharacterSkills(newCharacterSkills);
+
+        // Recalculate abilities based on new skills
+        calculateAbilities(newCharacterSkills);
+
+        // Persist change
+        characterSkillsApi.characterSkillsPatch({
+          characterId: `eq.${character?.id}`,
+          skillId: `eq.${meleeSkill.id}`,
+          characterSkills: newCharacterMeleeSkill,
+        }).catch(async (err: any) => {
+          console.error("Failed to update skills:", err);
+
+          if (err.response) {
+            console.error("Status:", err.response.status);
+            try {
+              const body = await err.response.text();
+              console.error("Body:", body);
+            } catch (parseErr) {
+              console.error("Could not parse error body:", parseErr);
+            }
+          }
+        });
+      }
+
 
       if (damage >= (defender.health ?? 0)) {
         if (isCharacterAttack) {
@@ -636,7 +755,7 @@ export default function App() {
                   ? {
                       ...character,
                       level: newLevel,
-                      experience: newExp,
+                      experience: newExp - nextLevelExp,
                       maxHealth: newMaxHealth,
                       health: newMaxHealth,
                       maxMana: newMaxMana,
@@ -656,7 +775,7 @@ export default function App() {
                   id: `eq.${character.id}`,
                   characters: {
                     level: newLevel,
-                    experience: newExp,
+                    experience: newExp - nextLevelExp,
                     maxHealth: newMaxHealth,
                     health: newMaxHealth,
                     maxMana: newMaxMana,
@@ -810,16 +929,6 @@ export default function App() {
         "Craft Item": () => {
             console.log("Crafting Item...");
         }, // Placeholder
-        "Punch": async () => {
-            console.log("Attempting to punch...");
-            const ability = abilitiesList.find(ab => ab.name === "Punch");
-            if (!ability) {
-                console.warn("Punch ability not found");
-                return;
-            }
-            const enemy = enemies.find(e => e.id === targetedEnemy) ?? null;
-            meleeAttack(character, ability, enemy, true);
-        },
         "Throw Item": () => {
             console.log("Throwing Item...");
         }, // Placeholder
@@ -965,7 +1074,7 @@ export default function App() {
                 const loadedAbilityRequiredLevels =  await abilitiesRequiredLevelsApi.abilitiesRequiredLevelsGet({});
                 setAbilitiesRequiredLevels(loadedAbilityRequiredLevels || []);
                 calculateAbilities(
-                  loadedCharacterSkills || [], loadedInventory || [], loadedAbilities || [], loadedAbilityRequiredLevels || [], loadedAbilityRequiredItems || []
+                  loadedCharacterSkills || [], loadedInventory || [], loadedAbilities || [], loadedAbilityRequiredLevels || [], loadedAbilityRequiredItems || [], loadedItems || []
                 );
               }
 
@@ -1790,11 +1899,59 @@ export default function App() {
         <View style={styles.equipmentContainer}>
           <TouchableOpacity style={styles.statBlock} onPress={() => setEquipmentOpen(true)}>
           <Image source={{ uri: imageHost + "abdominal-armor.png"}} style={styles.slotIcon} />
-        </TouchableOpacity>
+          </TouchableOpacity>
             <TouchableOpacity style={styles.statBlock} onPress={() => setInventoryOpen(true)}>
                 <Image source={{ uri: imageHost + "knapsack.png"}} style={styles.slotIcon} />
             </TouchableOpacity>
+            <TouchableOpacity style={styles.statBlock} onPress={() => setSkillTreeOpen(true)}>
+                <Image source={{ uri: imageHost + "skills.png"}} style={styles.slotIcon} />
+            </TouchableOpacity>
         </View>
+        {/* Skill Model */}
+        <Modal visible={isSkillTreeOpen} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+              {/* Close Button */}
+              <TouchableOpacity onPress={() => setSkillTreeOpen(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+
+              {selectedSkill && (() => {
+                const skillData = skills.find(s => s.id === selectedSkill.skillId);
+                if (!skillData) return null;
+                const skillLevelXPPercentage = ((selectedSkill.experience ?? 0) / fibbonaci(selectedSkill?.level ?? 1)) * 100;
+                return (
+                    <View style={styles.selectedItemContainer}>
+                        <Text style={styles.selectedItemTitle}>{skillData.name}</Text>
+                        <Image source={{ uri: imageHost + skillData.image}} style={styles.selectedItemImage} />
+                        <Text style={styles.selectedItemTitle}>{skillData.name}</Text>
+                        <Text style={styles.selectedItemDescription}>{skillData.description}</Text>
+                        <View style={styles.barContainer}>
+                        <View style={styles.barBackground}>
+                          <View style={[styles.barFill, { width: `${skillLevelXPPercentage}%`, backgroundColor: "gold" }]} />
+                        </View>
+                          <Text>XP: {selectedSkill.experience}/{fibbonaci((selectedSkill?.level ?? 1))}</Text>
+                         </View>
+                    </View>
+                );
+            })()}
+            {/* Skills */}
+                <ScrollView contentContainerStyle={styles.gridContainer}>
+                  {characterSkills.map((item, index) => {
+                    const skillData = skills.find((i) => i.id === item.skillId);
+                    if (!skillData) return null;
+                    return (
+                      <TouchableOpacity style={styles.statBlock} key={item.skillId} onPress={() => setSelectedSkill(item)}>
+                        <Image source={{ uri: imageHost + skillData.image}} style={styles.slotIcon} />
+                        <Text style={styles.statLabel}>{skillData.name}</Text>
+                        <Text style={styles.statValue}>Lvl: {item.level}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+
+            </View>
+         </Modal>  
+
 
         {/* Equipment Modal */}
               <Modal visible={isEquipmentOpen} transparent={true} animationType="slide">
@@ -2051,8 +2208,31 @@ export default function App() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
             renderItem={({ item: ability }) => (
-              <TouchableOpacity key={ability.id} style={styles.statBlock} onPress={abilityFunctions[ability.name]}>
-                <Image source={{ uri: imageHost + ability.image}} style={styles.slotIcon} />
+              <TouchableOpacity
+                key={ability.id}
+                style={styles.statBlock}
+                onPress={() => {
+                  const requiredSkill = abilitiesRequiredLevels.find(
+                    (arl) => arl.abilityId === ability.id
+                  );
+                  const meleeSkill = skills.find((s) => s.name === "Melee");
+
+                  if (meleeSkill && requiredSkill?.skillId === meleeSkill.id) {
+                    useMeleeAbility(ability.name);
+                  } else {
+                    const fn = abilityFunctions[ability.name];
+                    if (fn) {
+                      fn(); // actually invoke the handler
+                    } else {
+                      console.warn(`No function defined for ability: ${ability.name}`);
+                    }
+                  }
+                }}
+              >
+                <Image
+                  source={{ uri: imageHost + ability.image }}
+                  style={styles.slotIcon}
+                />
               </TouchableOpacity>
             )}
 
