@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi, InventoryApi } from "../../api/index"; // Adjust the import path as needed
-import type { Ability, Ancestry, Background, Character, CharacterSkill, Class, Item, Skill, Inventory } from "../../api/index"; // Adjust the import path as needed
+import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi, InventoryApi, AbilitiesRequiredItemsApi, AbilitiesRequiredLevelsApi } from "../../api/index"; // Adjust the import path as needed
+import type { Abilities, Ancestries, Backgrounds, Characters, CharacterSkills, Classes, Items, Skills, Inventory, AbilitiesRequiredItems, AbilitiesRequiredLevels } from "../../api/index"; // Adjust the import path as needed
 type CsvRow = Record<string, string>;
 const configuration = new Configuration({basePath: 'http://98.127.121.74:3000'});
 const API = {
@@ -14,17 +14,21 @@ const API = {
     items: new ItemsApi(configuration),
     skills: new SkillsApi(configuration),
     inventory: new InventoryApi(configuration),
+    abilitiesRequiredLevels: new AbilitiesRequiredLevelsApi(configuration),
+    abilitiesRequiredItems: new AbilitiesRequiredItemsApi(configuration)
 }
 const API_TYPES = {
-    abilities: {} as Ability,
-    ancestries: {} as Ancestry,
-    backgrounds: {} as Background,
-    characters: {} as Character,
-    characterSkills: {} as CharacterSkill,
-    classes: {} as Class,
-    items: {} as Item,
-    skills: {} as Skill,
+    abilities: {} as Abilities,
+    ancestries: {} as Ancestries,
+    backgrounds: {} as Backgrounds,
+    characters: {} as Characters,
+    characterSkills: {} as CharacterSkills,
+    classes: {} as Classes,
+    items: {} as Items,
+    skills: {} as Skills,
     inventory: {} as Inventory,
+    abilitiesRequiredLevels: {} as AbilitiesRequiredLevels,
+    abilitiesRequiredItems: {} as AbilitiesRequiredItems
 }
 
 function App() {
@@ -32,6 +36,8 @@ function App() {
   const [fetchedData, setFetchedData] = useState<any[]>(null);
   const [status, setStatus] = useState<string>("");
   const [selectedApi, setSelectedApi] = useState<keyof typeof API>("items");
+  const [skills, setSkills] = useState<Skills[] | null>(null);
+  const [abilities, setAbilities] = useState<Abilities[] | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +46,16 @@ function App() {
         // @ts-expect-error: dynamic API call
         const res = await API[selectedApi][`${selectedApi}Get`]({});
         setFetchedData(res || []);
+        if (selectedApi === "abilitiesRequiredItems") {
+          const a = await API["abilities"][`abilitiesGet`]({});
+          setAbilities(a || []);
+        } else if (selectedApi === "abilitiesRequiredLevels") {
+          const s = await API["skills"][`skillsGet`]({});
+          setSkills(s || []);
+          const a = await API["abilities"][`abilitiesGet`]({});
+          setAbilities(a || []);
+        }
+
         setStatus(`Fetched ${res?.length ?? 0} ${selectedApi} ✅`);
       } catch (err) {
         console.error(`Failed to fetch ${selectedApi}:`, err);
@@ -100,7 +116,6 @@ function App() {
 
       for (const row of jsonData) {
         const item = JSON.parse(JSON.stringify(row)) as typeof API_TYPES[typeof selectedApi];
-
         // Only check for duplicates if we're on items
         if (
           fetchedData.some((existing: any) => existing.name === item.name)
@@ -111,11 +126,37 @@ function App() {
           continue;
         }
 
-        // @ts-expect-error: dynamic call
-        const res = await API[selectedApi][`${selectedApi}Post`]({
-          [selectedApi]: item,
-        });
-        console.log("API response:", res);
+        if (selectedApi === "abilitiesRequiredItems") {
+          const reqAbility = abilities?.find((a) => a.name === item.name);
+          const modifiedItem = {
+            ...item,
+            itemTree: item.requiredItem,
+            abilityId: reqAbility?.id
+          }
+          const res = await API[selectedApi][`${selectedApi}Post`]({
+            [selectedApi]: modifiedItem,
+          });
+          console.log("API response:", res);
+
+        } else if (selectedApi === "abilitiesRequiredLevels") {
+          const reqSkill = skills?.find((s) => s.name === item.requiredSkill);
+          const reqAbility = abilities?.find((a) => a.name === item.name);
+          const modifiedItem = {
+            ...item,
+            skillId: reqSkill?.id,
+            abilityId: reqAbility?.id
+          }
+          const res = await API[selectedApi][`${selectedApi}Post`]({
+            [selectedApi]: modifiedItem,
+          });
+          console.log("API response:", res);
+        } else {
+          // @ts-expect-error: dynamic call
+          const res = await API[selectedApi][`${selectedApi}Post`]({
+            [selectedApi]: item,
+          });
+          console.log("API response:", res);
+        }
       }
 
       setStatus(`Upload successful ✅ (${selectedApi})`);
@@ -149,7 +190,6 @@ function App() {
           </button>
         ))}
       </div>
-
       {/* Fetched data preview */}
       {fetchedData?.length > 0 ? (
         <pre style={{ textAlign: "left" }}>

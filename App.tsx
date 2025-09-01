@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView, TextInput, FlatList, Image } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE, Circle, Callout } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE, Circle } from "react-native-maps";
 import * as Location from "expo-location";
 import * as SecureStore from 'expo-secure-store';
-import SwordInStone from "./assets/icons/svg/battle-gear.svg";
 
-import { AbilitiesApi, AncestriesApi, CharactersApi, CharacterSkillsApi, Configuration, ClassesApi, BackgroundsApi, InventoryApi, ItemsApi, SkillsApi} from './api/index';
-import type { Abilities, Ancestries, Characters, CharacterSkills, Classes, Backgrounds, Inventory, Items, Skills } from "./api/index";
+import { AbilitiesApi, AbilitiesRequiredLevelsApi, AbilitiesRequiredItemsApi, AncestriesApi, CharactersApi, CharacterSkillsApi, Configuration, ClassesApi, BackgroundsApi, InventoryApi, ItemsApi, SkillsApi} from './api/index';
+import type { Abilities, AbilitiesRequiredLevels, AbilitiesRequiredItems, Ancestries, Characters, CharacterSkills, Classes, Backgrounds, Inventory, Items, Skills } from "./api/index";
 
 type Enemy = Characters & {
   path: { lat: number; lng: number }[];
@@ -62,12 +61,12 @@ export default function App() {
   const [handsSlot, setHandsSlot] = useState<Items | null>(null);
   const [offhandSlot, setOffhandSlot] = useState<Items | null>(null);
   const [mainhandSlot, setMainhandSlot] = useState<Items | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<String | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<Items | null>(null);
   const [floatingTexts, setFloatingTexts] = useState<
     { id: string; lat: number; lng: number; text: string; color: string, expiresAt: number }[]
   >([]);
-
+  const [characterAbilities, setCharacterAbilities] = useState<Abilities[] | null>(null);
 
   const imageHost = "http://98.127.121.74:3001/";
   const config = new Configuration({basePath: 'http://98.127.121.74:3000'});
@@ -93,6 +92,12 @@ export default function App() {
 
   const characterSkillsApi = new CharacterSkillsApi(config);
   const [characterSkills, setCharacterSkills] = useState<CharacterSkills[]>([]);
+
+  const abilitiesRequiredLevelsApi = new AbilitiesRequiredLevelsApi(config);
+  const [abilitiesRequiredLevels, setAbilitiesRequiredLevels] = useState<AbilitiesRequiredLevels[]>([]);
+
+  const abilitiesRequiredItemsApi = new AbilitiesRequiredItemsApi(config);
+  const [abilitiesRequiredItems, setAbilitiesRequiredItems] = useState<AbilitiesRequiredItems[]>([]);
 
   const inventoryApi = new InventoryApi(config);
   const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -130,125 +135,176 @@ export default function App() {
     }
 
     function addToInventory(itemOnMapId: number) {
-        const itemOnMap = itemsOnMap.find(i => i.id === itemOnMapId);
-        const existingItem = inventory.find(i => i.itemId === itemOnMap?.itemId);
+      const itemOnMap = itemsOnMap.find(i => i.id === itemOnMapId);
+      if (!itemOnMap) return;
 
-        if (existingItem) {
-            const newQuantity = existingItem.quantity + 1;
+      const existingItem = inventory.find(i => i.itemId === itemOnMap.itemId);
 
-            // update state
-            setInventory(inventory.map(i =>
-                i.itemId === existingItem.itemId
-                    ? { ...i, quantity: newQuantity }
-                    : i
-            ));
+      let newInventory: Inventory[];
 
-            inventoryApi.inventoryPatch({
-               characterId: `eq.${existingItem.characterId}`,
-               itemId: `eq.${existingItem.itemId}`,
-               inventory: { ...existingItem, quantity: newQuantity },
-             }).catch(async (err: any) => {
-               console.error("Failed to update inventory:", err);
+      if (existingItem) {
+        const newQuantity = existingItem.quantity + 1;
 
-               if (err.response) {
-                 console.error("Status:", err.response.status);
-                 try {
-                   const body = await err.response.text();
-                   console.error("Body:", body);
-                 } catch (parseErr) {
-                   console.error("Could not parse error body:", parseErr);
-                 }
-               }
-             });
-        }
-         else {
-            const newItem: Inventory = {
-                characterId: character?.id ?? 0, // Use character ID if available
-                itemId: itemOnMap.itemId,
-                quantity: 1,
-            };
-            setInventory([...inventory, newItem]);
-            inventoryApi.inventoryPost({
-                inventory: newItem,
-            }).catch(async (err: any) => {
-               console.error("Failed to update inventory:", err);
-
-               if (err.response) {
-                 console.error("Status:", err.response.status);
-                 try {
-                   const body = await err.response.text();
-                   console.error("Body:", body);
-                 } catch (parseErr) {
-                   console.error("Could not parse error body:", parseErr);
-                 }
-               }
-             });
-        }
-        setItemsOnMap(prev => prev.filter(i => i.id !== itemOnMapId));
-    }
-
-    function calculateAbilities() {
-      const universalAbilities = [
-           "Gather",
-           "Search",
-           "Craft Item",
-           "Punch",
-           "Throw Item",
-      ]
-
-      return abilitiesList.filter(ability => universalAbilities.includes(ability.name));
-    }
-
-    function equipItem(item: Items) {
-        // 1. Handle equipping locally
-        if (item.equipmentSlot === "head") {
-          setHeadSlot(item);
-        } else if (item.equipmentSlot === "chest") {
-          setChestSlot(item);
-        } else if (item.equipmentSlot === "hands") {
-          setHandsSlot(item);
-        } else if (item.equipmentSlot === "legs") {
-          setLegsSlot(item);
-        } else if (item.equipmentSlot === "feet") {
-          setFeetSlot(item);
-        } else if (item.equipmentSlot === "main_hand") {
-          setMainhandSlot(item);
-        } else if (item.equipmentSlot === "off_hand") {
-          setOffhandSlot(item);
-        } else if (item.equipmentSlot === "either_hand") {
-          if (selectedSlot === "off_hand") {
-            setOffhandSlot(item);
-          } else {
-            setMainhandSlot(item);
-          }
-        }
-
-        // 2. Update inventory state (mark this one as equipped, unequip others in same slot)
-        setInventory((prev) =>
-          prev.map((invItem) => {
-            const isSameSlot = items.find((it) => it.id === invItem.itemId)?.equipmentSlot === item.equipmentSlot;
-
-            if (invItem.itemId === item.id) {
-              return { ...invItem, equipped: true }; // Equip new one
-            }
-
-            if (isSameSlot) {
-              return { ...invItem, equipped: false }; // Unequip conflicting item
-            }
-
-            return invItem;
-          })
+        newInventory = inventory.map(i =>
+          i.itemId === existingItem.itemId
+            ? { ...i, quantity: newQuantity }
+            : i
         );
 
-        // 3. Persist change to backend
-        const inventoryItem = inventory.find((i) => i.itemId === item.id);
+        setInventory(newInventory);
+
+        inventoryApi.inventoryPatch({
+          characterId: `eq.${existingItem.characterId}`,
+          itemId: `eq.${existingItem.itemId}`,
+          inventory: { ...existingItem, quantity: newQuantity },
+        }).catch(handleApiError);
+      } else {
+        const newItem: Inventory = {
+          characterId: character?.id ?? 0,
+          itemId: itemOnMap.itemId,
+          quantity: 1,
+        };
+
+        newInventory = [...inventory, newItem];
+        setInventory(newInventory);
+
+        inventoryApi.inventoryPost({
+          inventory: newItem,
+        }).catch(handleApiError);
+      }
+
+      // ✅ update abilities against the new inventory
+      calculateAbilities(characterSkills, newInventory);
+
+      // remove from map
+      setItemsOnMap(prev => prev.filter(i => i.id !== itemOnMapId));
+    }
+
+    function handleApiError(err: any) {
+      console.error("Failed to update inventory:", err);
+      if (err.response) {
+        console.error("Status:", err.response.status);
+        err.response.text().then(
+          (body: string) => console.error("Body:", body),
+          (parseErr: any) => console.error("Could not parse error body:", parseErr)
+        );
+      }
+    }
+
+
+    function calculateAbilities(newCharacterSkills: CharacterSkills[] = characterSkills, newInventory: Inventory[] = inventory, newAbilitiesList: Abilities[] = abilitiesList, newRequiredLevels: AbilitiesRequiredLevels[] = abilitiesRequiredLevels, newRequiredItems: AbilitiesRequiredItems[] = abilitiesRequiredItems) {
+      const inventoryByTree = newInventory.reduce<Record<string, number>>((acc, inv) => {
+        if (inv.equippedSlot != null) return acc;
+
+        const foundItem = items.find((it) => it.id === inv.itemId);
+        if (!foundItem) return acc;
+
+        const tree = foundItem.tree;
+        if (!tree) return acc;
+
+        acc[tree] = (acc[tree] ?? 0) + (inv.quantity ?? 0);
+        return acc;
+      }, {});
+
+      const ca = newAbilitiesList.filter((a) => {
+        if (!a.active) return false
+        // level requirement
+        const requiredLevel = newRequiredLevels.find((al) => al.abilityId === a.id);
+        if (requiredLevel) {
+          const characterLevel = newCharacterSkills.find((cs) => cs.skillId === requiredLevel.skillId);
+          const meetsLevelRequirement = (characterLevel?.level ?? 0) >= (requiredLevel.requiredLevel ?? 0);
+          if (!meetsLevelRequirement) return false;
+        }
+
+        // item requirement
+        const requiredItem = newRequiredItems.find((ai) => ai.abilityId === a.id);
+        if (requiredItem) {
+          const available = inventoryByTree[requiredItem.itemTree] ?? 0;
+          if (available < (requiredItem.requiredQuantity ?? 0)) return false;
+        }
+
+        return true;
+      });
+
+      setCharacterAbilities(ca);
+      return ca;
+    }
+
+
+    function equipItem(item: Items) {
+        let slot: string = selectedSlot ?? "";
+
+        // 1. Update local slot state
+        switch (item.equipmentSlot) {
+          case "head":
+            setHeadSlot(item);
+            slot = "head";
+            break;
+          case "chest":
+            setChestSlot(item);
+            slot = "chest";
+            break;
+          case "hands":
+            setHandsSlot(item);
+            slot = "hands";
+            break;
+          case "legs":
+            setLegsSlot(item);
+            slot = "legs";
+            break;
+          case "feet":
+            setFeetSlot(item);
+            slot = "feet";
+            break;
+          case "main_hand":
+            setMainhandSlot(item);
+            slot = "main_hand";
+            break;
+          case "offhand":
+            setOffhandSlot(item);
+            slot = "offhand";
+            break;
+          case "either_hand":
+            if (selectedSlot === "offhand") {
+              setOffhandSlot(item);
+              slot = "offhand";
+            } else {
+              setMainhandSlot(item);
+              slot = "main_hand";
+            }
+            break;
+        }
+
+        // 2. Build new inventory
+        const newInventory = inventory.map((invItem) => {
+          const invItemDef = items.find((it) => it.id === invItem.itemId);
+
+          if (!invItemDef) return invItem;
+
+          const isSameSlot = invItemDef.equipmentSlot === item.equipmentSlot;
+
+          if (invItem.itemId === item.id) {
+            return { ...invItem, equippedSlot: slot }; // equip selected
+          }
+
+          if (isSameSlot) {
+            return { ...invItem, equippedSlot: undefined }; // unequip others
+          }
+
+          return invItem;
+        });
+
+        setInventory(newInventory);
+
+        // 3. Persist selected item to backend
+        const inventoryItem = newInventory.find((i) => i.itemId === item.id);
         if (!inventoryItem) return;
 
         inventoryApi
           .inventoryPatch({
             characterId: `eq.${inventoryItem.characterId}`,
             itemId: `eq.${inventoryItem.itemId}`,
-            inventory: { ...inventoryItem, equipped: true },
+            inventory: inventoryItem,
           })
           .catch(async (err: any) => {
             console.error("Failed to update inventory:", err);
@@ -334,9 +390,8 @@ export default function App() {
     }
 
     function fibbonaci(n: number): number {
-        if (n <= 1) return n;
         let a = 0, b = 1, temp;
-        for (let i = 2; i <= n; i++) {
+        for (let i = 2; i <= n + 4; i++) {
             temp = a + b;
             a = b;
             b = temp;
@@ -503,9 +558,10 @@ export default function App() {
         `Attacking defender at ${distance.toFixed(2)}m with STR mod ${strengthModifier}, hits: ${ability?.hits ?? 1}`
       );
 
+      const defenderAc = isCharacterAttack ? 1 : calculateAC();
       for (let i = 0; i < (ability?.hits ?? 1); i++) {
         const hitRoll = Math.floor(Math.random() * 20) + 1 + strengthModifier;
-        if (hitRoll >= (defender.ac ?? 10)) {
+        if (hitRoll >= defenderAc) {
           const maxDamage = ability?.damage ?? 6;
           const damageRoll = Math.floor(Math.random() * maxDamage) + 1;
           console.log(`Hit! Rolled ${damageRoll} damage`);
@@ -553,7 +609,7 @@ export default function App() {
             const expGain = defender.level ?? 0;
             const newExp = (character?.experience ?? 0) + expGain;
             // Fibbonacci-like level up requirement
-            const nextLevelExp = fibbonaci((character?.level ?? 1) + 1);
+            const nextLevelExp = fibbonaci((character?.level ?? 1));
             if (newExp >= nextLevelExp) {
                 const newLevel = (character?.level ?? 1) + 1;
                 const newMaxHealth = (character?.maxHealth ?? 0) + 1;
@@ -834,6 +890,26 @@ export default function App() {
         };
         fetchAbilities();
 
+        const fetchAbilitiesRequiredItems = async () => {
+          try {
+            const result = await abilitiesRequiredItemsApi.abilitiesRequiredItemsGet({}); // fully-typed GET request
+            if (result) setAbilitiesRequiredItems(result);
+          } catch (err) {
+            console.error('Failed to fetch abilities required items:', err);
+          }
+        };
+        fetchAbilitiesRequiredItems();
+
+        const fetchAbilitiesRequiredLevels = async () => {
+          try {
+            const result = await abilitiesRequiredLevelsApi.abilitiesRequiredLevelsGet({}); // fully-typed GET request
+            if (result) setAbilitiesRequiredLevels(result);
+          } catch (err) {
+            console.error('Failed to fetch abilities required levels:', err);
+          }
+        };
+        fetchAbilitiesRequiredLevels();
+
         const fetchCharacter = async () => {
           try {
             const id = await loadCharacterId();
@@ -857,29 +933,23 @@ export default function App() {
                 const loadedItems = items.length != 0 ? items : await itemsApi.itemsGet({});
                 setItems(loadedItems);
                 loadedInventory?.forEach((inv) => {
-                  if (inv.equipped) {
+                  if (inv.equippedSlot) {
                     const it = loadedItems?.find((i) => i.id == inv.itemId);
                     if (it == null) return;
-                    if (it.equipmentSlot === "head") {
+                    if (inv.equippedSlot === "head") {
                       setHeadSlot(it);
-                    } else if (it.equipmentSlot === "chest") {
+                    } else if (inv.equippedSlot === "chest") {
                       setChestSlot(it);
-                    } else if (it.equipmentSlot === "hands") {
+                    } else if (inv.equippedSlot === "hands") {
                       setHandsSlot(it);
-                    } else if (it.equipmentSlot === "legs") {
+                    } else if (inv.equippedSlot === "legs") {
                       setLegsSlot(it);
-                    } else if (it.equipmentSlot === "feet") {
+                    } else if (inv.equippedSlot === "feet") {
                       setFeetSlot(it);
-                    } else if (it.equipmentSlot === "main_hand") {
+                    } else if (inv.equippedSlot === "main_hand") {
                       setMainhandSlot(it);
-                    } else if (it.equipmentSlot === "off_hand") {
+                    } else if (inv.equippedSlot === "offhand") {
                       setOffhandSlot(it);
-                    } else if (it.equipmentSlot === "either_hand") {
-                      if (selectedSlot === "off_hand") {
-                        setOffhandSlot(it);
-                      } else {
-                        setMainhandSlot(it);
-                      }
                     }
                   }
                 });
@@ -888,6 +958,15 @@ export default function App() {
                     limit: "100", // Adjust as needed
                 });
                 setCharacterSkills(loadedCharacterSkills || []);
+                const loadedAbilities = await abilitiesApi.abilitiesGet({});
+                setAbilitiesList(loadedAbilities || []);
+                const loadedAbilityRequiredItems =  await abilitiesRequiredItemsApi.abilitiesRequiredItemsGet({});
+                setAbilitiesRequiredItems(loadedAbilityRequiredItems || []);
+                const loadedAbilityRequiredLevels =  await abilitiesRequiredLevelsApi.abilitiesRequiredLevelsGet({});
+                setAbilitiesRequiredLevels(loadedAbilityRequiredLevels || []);
+                calculateAbilities(
+                  loadedCharacterSkills || [], loadedInventory || [], loadedAbilities || [], loadedAbilityRequiredLevels || [], loadedAbilityRequiredItems || []
+                );
               }
 
           } catch (err) {
@@ -1379,7 +1458,7 @@ export default function App() {
                         {selectedAbility && (
                             <View style={styles.selectedItemContainer}>
                                 <Text style={styles.selectedItemTitle}>{selectedAbility.name}</Text>
-                                <Image source={{ uri: imageHost + (selectedAbility.image == "thowing-ball.png" ? "thrown-charcoal.png" : selectedAbility.image) }} style={styles.selectedItemImage} />
+                                <Image source={{ uri: imageHost + selectedAbility.image}} style={styles.selectedItemImage} />
                                 <Text style={styles.selectedItemDescription}>{selectedAbility.description}</Text>
                                 <Text style={styles.selectedItemQuantity}>Range: {selectedAbility.range}m</Text>
                                 <Text style={styles.selectedItemQuantity}>Damage:{selectedAbility.damage}</Text>
@@ -1387,14 +1466,26 @@ export default function App() {
                             </View>
                         )}
                         <FlatList
-                            data={calculateAbilities()}
+                            data={abilitiesList.filter((a) => {
+                              if (!a.active) return false;
+                              const requiredLevel = abilitiesRequiredLevels.find((arl) => arl.abilityId === a.id);
+                              if (requiredLevel?.requiredLevel !== 1) {
+                                return false;
+                              }
+
+                              const requiredItem = abilitiesRequiredItems.find((ai) => ai.abilityId === a.id);
+                              if (requiredItem) {
+                                return false;
+                              }
+                              return true;
+                            })}
                             keyExtractor={(item) => item.id.toString()}
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
                             renderItem={({ item }) => (
                                 <TouchableOpacity style={styles.statBlock} onPress={() => setSelectedAbility(item)}>
-                                    <Image source={{ uri: imageHost + (item.image == "thowing-ball.png" ? "thrown-charcoal.png" : item.image) }} style={styles.slotIcon} />
+                                    <Image source={{ uri: imageHost + item.image }} style={styles.slotIcon} />
                                 </TouchableOpacity>
                                 )}
                         />
@@ -1438,21 +1529,21 @@ export default function App() {
                         saveCharacterId(id);
 
                         // Create initial skills
-//                         const characterSkills = calculateSkills().map(skill => ({
-//                           characterId: id,
-//                           skillId: skill.id,
-//                           level: 1,
-//                           experience: 0,
-//                         }));
-//                         console.log("Character Skills:", characterSkills);
-//
-//                         await characterSkills.forEach(skill => {
-//                             characterSkillsApi.characterSkillsPost({
-//                               characterSkills: skill,
-//                             });
-//                         });
-//
-//                         setCharacterSkills(characterSkills);
+                        const characterSkills = skills.map((skill) => ({
+                            characterId: id,
+                            skillId: skill.id,
+                            level: 1,
+                            experience: 0,
+                        }));
+
+                        await characterSkills.forEach(skill => {
+                            characterSkillsApi.characterSkillsPost({
+                              characterSkills: skill,
+                            });
+                        });
+
+                        setCharacterSkills(characterSkills);
+                        calculateAbilities(characterSkills, inventory);
                       }}
                     >
                         <Text style={{ color: "#fff", textAlign: "center", fontSize: 18 }}>Create Character</Text>
@@ -1481,7 +1572,7 @@ export default function App() {
   const maxMana = 250;
 
   const hpPercentage = (character.health / character.maxHealth) * 100;
-  const xpPercentage = (character.experience / fibbonaci(character.level +1)) * 100;
+  const xpPercentage = (character.experience / fibbonaci(character.level ?? 1)) * 100;
   const manaPercentage = (character.mana / character.maxMana) * 100;
 
 
@@ -1651,7 +1742,7 @@ export default function App() {
                   <View style={styles.barBackground}>
                     <View style={[styles.barFill, { width: `${xpPercentage}%`, backgroundColor: "gold" }]} />
                   </View>
-                    <Text>XP: {character.experience}/{fibbonaci(character.level +1)}</Text>
+                    <Text>XP: {character.experience}/{fibbonaci((character?.level ?? 1))}</Text>
                 </View>
         </View>
           <TouchableOpacity activeOpacity={0.8}
@@ -1723,7 +1814,7 @@ export default function App() {
                                     <Text style={styles.statLabel}>Main Hand</Text>
                                     <Text style={styles.statValue}>{mainhandSlot?.name || "None"}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("off_hand");}}>
+                                <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("offhand");}}>
                                     <Image source={{ uri: imageHost + (offhandSlot?.image ?? "shield.png")}} style={[styles.slotIcon, !offhandSlot && { opacity: 0.4}]} />
                                     <Text style={styles.statLabel}>Off Hand</Text>
                                     <Text style={styles.statValue}>{offhandSlot?.name || "None"}</Text>
@@ -1771,7 +1862,7 @@ export default function App() {
                     "legs": legsSlot,
                     "hands": handsSlot,
                     "feet": feetSlot,
-                    "off_hand": offhandSlot,
+                    "offhand": offhandSlot,
                     "main_hand": mainhandSlot,
                     "either_hand": mainhandSlot || offhandSlot
                   };
@@ -1864,7 +1955,7 @@ export default function App() {
                             if (!it) return false; // skip if not found
                             if (it.type !== "armor" && it.type !== "weapon") return false;
                             if (selectedSlot == null) return true;
-                            return it.equipmentSlot === selectedSlot || (it.equipmentSlot === "either_hand" && (selectedSlot === "main_hand" || selectedSlot === "off_hand"));
+                            return it.equipmentSlot === selectedSlot || (it.equipmentSlot === "either_hand" && (selectedSlot === "main_hand" || selectedSlot === "offhand"));
                           })}
                         keyExtractor={(item) => item.id.toString()}
                         horizontal
@@ -1953,11 +2044,7 @@ export default function App() {
           <FlatList
 
            data={
-            abilitiesList
-                .filter((a) => {
-                    if (a.image && a.image != "leg.png") return true; // requires an image
-                    return false;
-                  })
+             characterAbilities
             }
             keyExtractor={(item) => item.id.toString()}
             horizontal
@@ -1965,7 +2052,7 @@ export default function App() {
             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
             renderItem={({ item: ability }) => (
               <TouchableOpacity key={ability.id} style={styles.statBlock} onPress={abilityFunctions[ability.name]}>
-                <Image source={{ uri: imageHost + (ability.image == "thowing-ball.png" ? "thrown-charcoal.png" : ability.image)}} style={styles.slotIcon} />
+                <Image source={{ uri: imageHost + ability.image}} style={styles.slotIcon} />
               </TouchableOpacity>
             )}
 

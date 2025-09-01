@@ -26,6 +26,7 @@ create table items (
   armor_slots int default 0, -- how many augmentation slots the armor has
   weight float default 1.0, -- weight for inventory management
   gold_value bigint default 0, -- base value in gold
+  tree text check (tree in ('', 'poison', 'dagger')) null,
   image text -- path to asset
 );
 
@@ -40,6 +41,22 @@ create table abilities (
   cooldown int default 1,
   active boolean default true,
   image text
+);
+
+-- Ability required level
+create table abilities_required_levels(
+  ability_id int references abilities(id),
+  skill_id int references skills(id),
+  required_level int,
+  primary key(ability_id, skill_id)
+);
+
+-- Ability required level
+create table abilities_required_items(
+  ability_id int references abilities(id),
+  item_tree text check (item_tree in ('poison', 'dagger')) null,
+  required_quantity int,
+  primary key(ability_id, item_tree)
 );
 
 -- 🌱 Ancestries
@@ -135,7 +152,7 @@ create table character_skills (
 create table inventory (
   character_id int references characters(id) on delete cascade,
   item_id int references items(id),
-  equipped boolean default false,
+  equipped_slot text check (equipped_slot in ('head','chest','legs','feet','hands','main_hand','offhand','ring','amulet')) null,
   quantity int default 1,
   primary key(character_id, item_id)
 );
