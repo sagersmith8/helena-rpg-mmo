@@ -44,7 +44,7 @@ export default function App() {
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [isEquipmentOpen, setEquipmentOpen] = useState(false);
   const [isSkillTreeOpen, setSkillTreeOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Items | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<CharacterSkills | null>(null);
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [character, setCharacter] = useState<Characters | null>(null);
@@ -107,6 +107,7 @@ export default function App() {
   const [targetedEnemy, setTargetedEnemy] = useState<number | null>(null);
 
   const [itemsOnMap, setItemsOnMap] = useState<{ id: number; lat: number; lng: number, itemId: number }[]>([]);
+  const [characterRange, setCharacterRange] = useState<number | null>(null);
 
   useEffect(() => {
       if (location && character) {
@@ -134,6 +135,80 @@ export default function App() {
     function spawnItemOnMap(itemId: number, lat: number, lng: number) {
         const id = Math.floor(Math.random() * 1000000);
         setItemsOnMap(prev => [...prev, {id, itemId, lat, lng }]);
+    }
+
+    function consumeItemInInventory(inventoryItem: Inventory) {
+      const itemData = items.find((it) => inventoryItem.itemId === it.id);
+      if (!itemData) {
+        console.warn("Item not found for inventoryItem", inventoryItem);
+        return;
+      }
+
+      // heal or damage
+      let healAmount = (itemData.goldValue ?? 0) / 10;
+      if (itemData.image === "poison-bottle.png") {
+        healAmount *= -1;
+      }
+
+      // ✅ update character health locally
+      setCharacter((prev) => {
+        if (!prev) return prev;
+        const newHealth = Math.min(
+          (prev.health ?? 0) + healAmount,
+          prev.maxHealth ?? 10
+        );
+        return { ...prev, health: newHealth };
+      });
+
+      // ✅ decrease quantity or remove from inventory
+      let newInventory: Inventory[];
+      if (inventoryItem.quantity > 1) {
+        const updatedItem = { ...inventoryItem, quantity: inventoryItem.quantity - 1 };
+        newInventory = inventory.map((i) =>
+          i.itemId === inventoryItem.itemId ? updatedItem : i
+        );
+        setInventory(newInventory);
+
+        // PATCH the updated inventory item
+        inventoryApi
+          .inventoryPatch({
+            characterId: `eq.${updatedItem.characterId}`,
+            itemId: `eq.${updatedItem.itemId}`,
+            inventory: updatedItem,
+          })
+          .catch(handleApiError);
+      } else {
+        newInventory = inventory.filter((i) => i.itemId !== inventoryItem.itemId);
+        setInventory(newInventory);
+        setSelectedItem(null);
+
+        // DELETE the item since quantity is 0
+        inventoryApi
+          .inventoryDelete({
+            characterId: `eq.${inventoryItem.characterId}`,
+            itemId: `eq.${inventoryItem.itemId}`,
+          })
+          .catch(handleApiError);
+      }
+
+      // ✅ PATCH character health to backend
+      if (character) {
+        charactersApi
+          .charactersPatch({
+            id: `eq.${character.id}`,
+            characters: {
+              ... character,
+              health: Math.min(
+                (character.health ?? 0) + healAmount,
+                character.maxHealth ?? 10
+              ),
+            },
+          })
+          .catch(handleApiError);
+      }
+
+      // ✅ recalc abilities with updated inventory
+      calculateAbilities(characterSkills, newInventory);
     }
 
     function addToInventory(itemOnMapId: number) {
@@ -297,6 +372,7 @@ export default function App() {
         });
 
         setInventory(newInventory);
+        calculateCharacterRange(newInventory);
 
         // 3. Persist selected item to backend
         const inventoryItem = newInventory.find((i) => i.itemId === item.id);
@@ -342,6 +418,19 @@ export default function App() {
         return null;
       }
     }
+
+  function calculateCharacterRange(newInventory: Inventory[] = inventory, newCharacter: Characters = character) {
+      var weight = 0;
+      inventory.forEach((inv) => {
+        if (inv.equippedSlot != null) {
+          const item = items.find((it) => it.id === inv.itemId);
+          weight += item?.weight ?? 0;
+      }});
+      const calculatedRange = (newCharacter?.speed ?? 0) - ((
+          weight
+        ) / ((character?.strength ?? 1) * 5));
+      setCharacterRange(Math.max(calculatedRange, 0));
+  }
 
   function getEquippedItemsForMelee() {
     const equipped: Items[] = [];
@@ -433,17 +522,20 @@ export default function App() {
         return 10 + (ancestry?.bonusIntelligence ?? 0) + (background?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0);
     }
 
-    function fibbonaci(n: number): number {
-        if (n <= 1) {
+    function calculateXpToNextLevel(n: number): number {
+        if (n < 1) {
           return 1;
         }
-        let a = 0, b = 1, temp;
-        for (let i = 2; i <= n ; i++) {
-            temp = a + b;
-            a = b;
-            b = temp;
+        let xpToNextLevel = 2, multiplier = 1.1;
+        for (let level = 1; level < n ; level++){
+          xpToNextLevel = Math.ceil(xpToNextLevel * multiplier);
+          if (level < 200) {
+            if (level % 10 == 0) {
+              multiplier = multiplier = Math.max(multiplier - 0.005, 1.01);
+            }
+          }
         }
-        return b;
+        return xpToNextLevel;
     }
 
     async function spawnEnemy(latitude: number, longitude: number) {
@@ -579,7 +671,7 @@ export default function App() {
       const strengthModifier = Math.floor(((character.strength ?? 10) - 10) / 2);
 
       // Range check
-      const range = (character.speed ?? 0) + (ability?.range ?? 0);
+      const range = (characterRange?? 0) + (ability?.range ?? 0);
       const inRange = distance <= range;
 
       if (!inRange) {
@@ -663,7 +755,7 @@ export default function App() {
         if (!meleeSkill || !characterMeleeSkill) return;
 
         const newExp = (characterMeleeSkill.experience ?? 0) + 1;
-        const nextLevelExp = fibbonaci(characterMeleeSkill.level ?? 1);
+        const nextLevelExp = calculateXpToNextLevel(characterMeleeSkill.level ?? 1);
 
         let newCharacterMeleeSkill: CharacterSkills;
 
@@ -728,7 +820,7 @@ export default function App() {
             const expGain = defender.level ?? 0;
             const newExp = (character?.experience ?? 0) + expGain;
             // Fibbonacci-like level up requirement
-            const nextLevelExp = fibbonaci((character?.level ?? 1));
+            const nextLevelExp = calculateXpToNextLevel((character?.level ?? 1));
             if (newExp >= nextLevelExp) {
                 const newLevel = (character?.level ?? 1) + 1;
                 const newMaxHealth = (character?.maxHealth ?? 0) + 1;
@@ -739,6 +831,8 @@ export default function App() {
                 const newCharisma = (character?.charisma ?? 0) + 1;
                 const newWisdom = (character?.wisdom ?? 0) + 1;
                 const newConstitution = (character?.constitution ?? 0) + 1;
+                const newSpeed = (character?.speed ?? 0) + 1;
+                setCharacterRange((characterRange ?? 0) + 1);
                 // Alert with new values
                 setFloatingTexts(prev => [
                     ...prev,
@@ -765,7 +859,8 @@ export default function App() {
                       intelligence: newIntelligence,
                       charisma: newCharisma,
                       wisdom: newWisdom,
-                      constitution: newConstitution
+                      constitution: newConstitution,
+                      speed: newSpeed,
                     }
                   : character;
 
@@ -785,7 +880,8 @@ export default function App() {
                     intelligence: newIntelligence,
                     charisma: newCharisma,
                     wisdom: newWisdom,
-                    constitution: newConstitution
+                    constitution: newConstitution,
+                    speed: newSpeed
                   },
                 }).catch(async (err: any) => {
                    console.error("Failed to update character level:", err);
@@ -847,6 +943,24 @@ export default function App() {
             );
         } else {
             setCharacter(prev => prev ? { ...prev, health: (prev.health ?? 10) - damage } : prev);
+            charactersApi.charactersPatch({
+                id: `eq.${character.id}`,
+                characters: {
+                  health: (character?.health ?? 0) - damage
+                },
+              }).catch(async (err: any) => {
+                  console.error("Failed to update character level:", err);
+
+                  if (err.response) {
+                    console.error("Status:", err.response.status);
+                    try {
+                      const body = await err.response.text();
+                      console.error("Body:", body);
+                    } catch (parseErr) {
+                      console.error("Could not parse error body:", parseErr);
+                    }
+                  }
+                });
         }
       }
 
@@ -885,7 +999,7 @@ export default function App() {
         "Gather": () => {
             console.log("Gather...");
             // items withing my speed range get added to my inventory
-            const speed = character.speed
+            const speed = characterRange
             if (!location || !character || !speed) {
                 console.warn("No location or character speed available for gathering");
                 return;
@@ -931,6 +1045,61 @@ export default function App() {
         }, // Placeholder
         "Throw Item": () => {
             console.log("Throwing Item...");
+             setFloatingTexts(prev => [
+              ...prev,
+              {
+                id: `${Date.now()}`,
+              lat: location.coords.latitude + (Math.random() - 0.5) * 0.0003,
+              lng: location.coords.longitude + (Math.random() - 0.5) * 0.0003,
+                text: "Throw!",
+                color: "purple",
+                expiresAt: Date.now() + 1000, // 1 second
+              },
+            ]);
+            const rock = items.find((it) => it.name === "Rock");
+            const rockInInventory = inventory.find((inv) => inv.itemId === rock?.id);
+            if (rockInInventory) {
+              const throwAbility = abilitiesList.find(a => a.name === "Throw Item");
+              meleeAttack(character, throwAbility, targetedEnemy, true);
+                if (Math.random() < 0.7) {
+                  spawnItemOnMap(
+                    rock.id,
+                    location.coords.latitude + (Math.random() - 0.5) * 0.0005,
+                    location.coords.longitude + (Math.random() - 0.5) * 0.0005
+                  );
+                }
+              
+               let newInventory: Inventory[];
+                if (rockInInventory.quantity > 1) {
+                  const updatedItem = { ...rockInInventory, quantity: rockInInventory.quantity - 1 };
+                  newInventory = inventory.map((i) =>
+                    i.itemId === rockInInventory.itemId ? updatedItem : i
+                  );
+                  setInventory(newInventory);
+
+                  // PATCH the updated inventory item
+                  inventoryApi
+                    .inventoryPatch({
+                      characterId: `eq.${updatedItem.characterId}`,
+                      itemId: `eq.${updatedItem.itemId}`,
+                      inventory: updatedItem,
+                    })
+                    .catch(handleApiError);
+                } else {
+                  newInventory = inventory.filter((i) => i.itemId !== rockInInventory.itemId);
+                  setInventory(newInventory);
+                  setSelectedItem(null);
+
+                  // DELETE the item since quantity is 0
+                  inventoryApi
+                    .inventoryDelete({
+                      characterId: `eq.${rockInInventory.characterId}`,
+                      itemId: `eq.${rockInInventory.itemId}`,
+                    })
+                    .catch(handleApiError);
+                }
+                calculateAbilities(characterSkills, newInventory);
+            }
         }, // Placeholder
     };
 
@@ -1062,6 +1231,7 @@ export default function App() {
                     }
                   }
                 });
+                calculateCharacterRange(loadedInventory, loadedCharacter);
                 const loadedCharacterSkills = await characterSkillsApi.characterSkillsGet({
                     characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
                     limit: "100", // Adjust as needed
@@ -1245,7 +1415,7 @@ export default function App() {
         clearInterval(itemTimer);
         clearInterval(enemySpawnTimer);
       };
-    }, [location, items]);
+    }, [items]);
 
     if (!character) {
         return (
@@ -1681,7 +1851,7 @@ export default function App() {
   const maxMana = 250;
 
   const hpPercentage = (character.health / character.maxHealth) * 100;
-  const xpPercentage = (character.experience / fibbonaci(character.level ?? 1)) * 100;
+  const xpPercentage = (character.experience / calculateXpToNextLevel(character.level ?? 1)) * 100;
   const manaPercentage = (character.mana / character.maxMana) * 100;
 
 
@@ -1823,7 +1993,7 @@ export default function App() {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude
           }}
-          radius={character.speed} // meters
+          radius={characterRange} // meters
           strokeWidth={2}
           strokeColor="rgba(255,0,255,0.6)"
           fillColor="rgba(255,0, 255, 0.2)"
@@ -1851,7 +2021,7 @@ export default function App() {
                   <View style={styles.barBackground}>
                     <View style={[styles.barFill, { width: `${xpPercentage}%`, backgroundColor: "gold" }]} />
                   </View>
-                    <Text>XP: {character.experience}/{fibbonaci((character?.level ?? 1))}</Text>
+                    <Text>XP: {character.experience}/{calculateXpToNextLevel((character?.level ?? 1))}</Text>
                 </View>
         </View>
           <TouchableOpacity activeOpacity={0.8}
@@ -1918,7 +2088,7 @@ export default function App() {
               {selectedSkill && (() => {
                 const skillData = skills.find(s => s.id === selectedSkill.skillId);
                 if (!skillData) return null;
-                const skillLevelXPPercentage = ((selectedSkill.experience ?? 0) / fibbonaci(selectedSkill?.level ?? 1)) * 100;
+                const skillLevelXPPercentage = ((selectedSkill.experience ?? 0) / calculateXpToNextLevel(selectedSkill?.level ?? 1)) * 100;
                 return (
                     <View style={styles.selectedItemContainer}>
                         <Text style={styles.selectedItemTitle}>{skillData.name}</Text>
@@ -1929,7 +2099,7 @@ export default function App() {
                         <View style={styles.barBackground}>
                           <View style={[styles.barFill, { width: `${skillLevelXPPercentage}%`, backgroundColor: "gold" }]} />
                         </View>
-                          <Text>XP: {selectedSkill.experience}/{fibbonaci((selectedSkill?.level ?? 1))}</Text>
+                          <Text>XP: {selectedSkill.experience}/{calculateXpToNextLevel((selectedSkill?.level ?? 1))}</Text>
                          </View>
                     </View>
                 );
@@ -2153,23 +2323,7 @@ export default function App() {
                         <Text style={styles.selectedItemQuantity}>Quantity: {selectedItem.quantity}</Text>
                         {itemData.type === "consumable" && (
                             <TouchableOpacity style={styles.useButton} onPress={() => {
-                                // Use consumable
-                                if (itemData.effect === "heal") {
-                                    const healAmount = itemData.effectAmount || 0;
-                                    setCharacter(prev => {
-                                        if (!prev) return prev;
-                                        const newHealth = Math.min(prev.health + healAmount, prev.maxHealth);
-                                        return { ...prev, health: newHealth };
-                                    });
-                                    // Decrease quantity or remove from inventory
-                                    if (selectedItem.quantity > 1) {
-                                        selectedItem.quantity -= 1;
-                                        setInventory([...inventory]);
-                                    } else {
-                                        setInventory(inventory.filter(i => i.itemId !== selectedItem.itemId));
-                                        setSelectedItem(null);
-                                    }
-                                }
+                               consumeItemInInventory(selectedItem);
                             }}>
                                 <Text style={styles.useButtonText}>Use</Text>
                             </TouchableOpacity>

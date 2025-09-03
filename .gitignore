@@ -17,7 +17,6 @@ openapi3.json
 dist/
 web-build/
 expo-env.d.ts
-android/
 ios/
 
 # Native
