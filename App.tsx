@@ -108,6 +108,7 @@ export default function App() {
 
   const [itemsOnMap, setItemsOnMap] = useState<{ id: number; lat: number; lng: number, itemId: number }[]>([]);
   const [characterRange, setCharacterRange] = useState<number | null>(null);
+  const locationRef = useRef<Location.LocationObject | null>(null);
 
   useEffect(() => {
       if (location && character) {
@@ -1323,97 +1324,97 @@ export default function App() {
     }
 
     useEffect(() => {
-      if (!location || items.length === 0) {
-        console.log("Waiting for location and items to be available...");
-        return;
+      if (location) {
+        locationRef.current = location;
       }
+    }, [location]);
 
-      if (enemies.length === 0) {
-        console.log("Spawning initial enemies...");
+    useEffect(() => {
+      if (items.length === 0) return;
+
+      // Initial bootstrap: spawn one enemy near you
+      if (locationRef.current) {
         spawnEnemy(
-            location.coords.latitude + (Math.random() - 0.5) * 0.0005,
-            location.coords.longitude + (Math.random() - 0.5) * 0.0005);
+          locationRef.current.coords.latitude + (Math.random() - 0.5) * 0.0005,
+          locationRef.current.coords.longitude + (Math.random() - 0.5) * 0.0005
+        );
       }
 
-    // Spawn enemies every 5 minutes
-    const enemySpawnTimer = setInterval(() => {
-      console.log("Spawning enemy timer triggered");
-      spawnEnemy(location.coords.latitude + (Math.random() - 0.5) * 0.001,
-                             location.coords.longitude + (Math.random() - 0.5) * 0.001); // pass latest location directly
-    }, 1 * 20 * 1000); // every 20 seconds for testing, change to 5*60*1000 (5 minutes) later
-
-      const smoothStepInterval = 50; // ms per micro-step
-      const microSteps = 100;
-
-      // Animate enemies
-      const enemyAnimTimer = setInterval(() => {
-        setEnemies(prev =>
-          prev.map(e => {
-             // If character is in perception
-              if (canSeeCharacter(e, character)) {
-                const distance = getDistanceMeters(
-                  { lat: e.latitude, lon: e.longitude },
-                  { lat: character.latitude, lon: character.longitude }
-                );
-
-                const now = Date.now();
-
-                // If in attack range → attack
-                if (distance <= e.speed) {
-                  if (!e.lastAttackTime || now - e.lastAttackTime >= 2000) {
-                      const attack = abilitiesList.find(ab => ab.name === "Punch");
-                      meleeAttack(e, attack, character, false);
-                      return { ...e, lastAttackTime: now };
-                    }
-                  return e;
-                }
-
-                // Otherwise → move toward character
-                return moveToward(e, character, 1); // move 1m per tick
-              }
-
-            if (!e.path || e.path.length < 2) return e;
-
-            const current = e.path[e.step];
-            const nextStep = (e.step + 1) % e.path.length;
-            const next = e.path[nextStep];
-
-            const interpolationFactor = (e.microStep ?? 0) / microSteps;
-
-            const microLat =
-              current.lat + (next.lat - current.lat) * interpolationFactor;
-            const microLng =
-              current.lng + (next.lng - current.lng) * interpolationFactor;
-
-            const newMicroStep = (e.microStep ?? 0) + 1;
-            const newStep = newMicroStep >= microSteps ? nextStep : e.step;
-
-            return {
-              ...e,
-              latitude: microLat,
-              longitude: microLng,
-              step: newStep,
-              microStep: newMicroStep % microSteps,
-            };
-          })
+      // Enemy spawn timer
+      const enemySpawnTimer = setInterval(() => {
+        const loc = locationRef.current;
+        if (!loc) return;
+        spawnEnemy(
+          loc.coords.latitude + (Math.random() - 0.5) * 0.001,
+          loc.coords.longitude + (Math.random() - 0.5) * 0.001
         );
-      }, smoothStepInterval);
+      }, 20_000);
 
-      // Spawn items every 2 minutes
+      // Item spawn timer
       const itemTimer = setInterval(() => {
-        console.log("Spawning item...");
+        const loc = locationRef.current;
+        if (!loc) return;
         const item = items[Math.floor(Math.random() * items.length)];
         spawnItemOnMap(
           item.id,
-          location.coords.latitude + (Math.random() - 0.5) * 0.001,
-          location.coords.longitude + (Math.random() - 0.5) * 0.001
+          loc.coords.latitude + (Math.random() - 0.5) * 0.001,
+          loc.coords.longitude + (Math.random() - 0.5) * 0.001
         );
-      }, 1 * 20 * 1000); // every 20 seconds for testing, change to 2*60*1000 (2 minutes) later
+      }, 20_000);
+
+      // Enemy movement/AI loop
+      const smoothStepInterval = 50;
+      const microSteps = 100;
+      const enemyAnimTimer = setInterval(() => {
+        setEnemies(prev => prev.map(e => {
+          const loc = locationRef.current;
+          if (!loc) return e;
+
+          // Perception/attack/movement logic…
+          if (canSeeCharacter(e, character)) {
+            const distance = getDistanceMeters(
+              { lat: e.latitude, lon: e.longitude },
+              { lat: character.latitude, lon: character.longitude }
+            );
+            const now = Date.now();
+            if (distance <= e.speed) {
+              if (!e.lastAttackTime || now - e.lastAttackTime >= 2000) {
+                const attack = abilitiesList.find(ab => ab.name === "Punch");
+                meleeAttack(e, attack, character, false);
+                return { ...e, lastAttackTime: now };
+              }
+              return e;
+            }
+            return moveToward(e, character, 1);
+          }
+
+          // Path interpolation fallback
+          if (!e.path || e.path.length < 2) return e;
+          const current = e.path[e.step];
+          const nextStep = (e.step + 1) % e.path.length;
+          const next = e.path[nextStep];
+
+          const interpolationFactor = (e.microStep ?? 0) / microSteps;
+          const microLat = current.lat + (next.lat - current.lat) * interpolationFactor;
+          const microLng = current.lng + (next.lng - current.lng) * interpolationFactor;
+
+          const newMicroStep = (e.microStep ?? 0) + 1;
+          const newStep = newMicroStep >= microSteps ? nextStep : e.step;
+
+          return {
+            ...e,
+            latitude: microLat,
+            longitude: microLng,
+            step: newStep,
+            microStep: newMicroStep % microSteps,
+          };
+        }));
+      }, smoothStepInterval);
 
       return () => {
-        clearInterval(enemyAnimTimer);
-        clearInterval(itemTimer);
         clearInterval(enemySpawnTimer);
+        clearInterval(itemTimer);
+        clearInterval(enemyAnimTimer);
       };
     }, [items]);
 
