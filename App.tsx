@@ -1822,6 +1822,7 @@ export default function App() {
                         });
 
                         setCharacterSkills(characterSkills);
+                        setCharacterRange(calculateSpeed());
                         calculateAbilities(characterSkills, inventory);
                       }}
                     >
