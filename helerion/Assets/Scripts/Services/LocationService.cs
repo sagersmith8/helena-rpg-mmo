@@ -5,12 +5,13 @@ namespace Helerion.Services
 {
     /// <summary>
     /// Wraps Unity's Input.location for GPS. In Editor, use mock location for testing.
+    /// Named GpsLocationService to avoid conflict with UnityEngine.LocationService.
     /// </summary>
-    public class LocationService
+    public class GpsLocationService
     {
-        public bool IsRunning => Input.location.status == LocationServiceStatus.Running;
-        public float Latitude => Input.location.status == LocationServiceStatus.Running ? Input.location.lastData.latitude : _mockLat;
-        public float Longitude => Input.location.status == LocationServiceStatus.Running ? Input.location.lastData.longitude : _mockLng;
+        public bool IsRunning => Input.location.status == UnityEngine.LocationServiceStatus.Running;
+        public float Latitude => Input.location.status == UnityEngine.LocationServiceStatus.Running ? Input.location.lastData.latitude : _mockLat;
+        public float Longitude => Input.location.status == UnityEngine.LocationServiceStatus.Running ? Input.location.lastData.longitude : _mockLng;
 
         private float _mockLat = 37.7749f;
         private float _mockLng = -122.4194f;

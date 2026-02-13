@@ -52,7 +52,7 @@ namespace Helerion.API
 
         public void PostInventory(InventoryEntry entry, Action onSuccess, Action<string> onError)
         {
-            Post("inventory", JsonUtility.ToJson(new Wrapper<InventoryEntry> { inventory = entry }), _ => onSuccess?.Invoke(), onError);
+            Post<InventoryEntry>("inventory", JsonUtility.ToJson(new Wrapper<InventoryEntry> { inventory = entry }), _ => onSuccess?.Invoke(), onError);
         }
 
         public void PatchInventory(int characterId, int itemId, InventoryEntry entry, Action onSuccess, Action<string> onError)
@@ -104,7 +104,7 @@ namespace Helerion.API
             req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
             req.downloadHandler = new DownloadHandlerBuffer();
             req.SetRequestHeader("Content-Type", "application/json");
-            Send(req, _ => onSuccess?.Invoke(), onError);
+            Send<object>(req, _ => onSuccess?.Invoke(), onError);
         }
 
         private void Send<T>(UnityWebRequest req, Action<T[]> onSuccess, Action<string> onError)

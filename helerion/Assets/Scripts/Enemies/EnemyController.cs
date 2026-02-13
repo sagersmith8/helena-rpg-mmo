@@ -25,7 +25,6 @@ namespace Helerion.Enemies
         private List<(float lng, float lat)> _path = new List<(float, float)>();
         private int _pathIndex;
         private float _lastAttackTime;
-        private bool _chasing;
 
         private void Awake()
         {
@@ -50,14 +49,13 @@ namespace Helerion.Enemies
         {
             _path = path ?? new List<(float, float)>();
             _pathIndex = 0;
-            _chasing = false;
         }
 
         private void Update()
         {
             if (health != null && health.current <= 0) return;
 
-            var origin = WorldOrigin.Instance ?? FindObjectOfType<WorldOrigin>();
+            var origin = WorldOrigin.Instance ?? FindFirstObjectByType<WorldOrigin>();
             if (origin == null) return;
 
             Vector3 myPos = transform.position;

@@ -26,6 +26,14 @@ namespace Helerion.Config
 
         public static GameConfig Instance { get; private set; }
 
+        /// <summary>
+        /// Call from GameManager (or bootstrap) when you have a config asset assigned.
+        /// </summary>
+        public void SetAsInstance()
+        {
+            Instance = this;
+        }
+
         private void OnEnable()
         {
             Instance = this;

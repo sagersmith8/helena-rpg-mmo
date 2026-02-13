@@ -25,7 +25,10 @@ namespace Helerion.Services
                 onError?.Invoke("Need at least 2 waypoints");
                 return;
             }
-            var coords = string.Join(";", waypoints.ConvertAll(w => $"{w.lng},{w.lat}"));
+            var parts = new List<string>(waypoints.Count);
+            for (int i = 0; i < waypoints.Count; i++)
+                parts.Add($"{waypoints[i].lng},{waypoints[i].lat}");
+            var coords = string.Join(";", parts);
             var url = $"{_baseUrl}/route/v1/driving/{Uri.EscapeDataString(coords)}?overview=full&geometries=geojson";
             var req = UnityWebRequest.Get(url);
             var op = req.SendWebRequest();

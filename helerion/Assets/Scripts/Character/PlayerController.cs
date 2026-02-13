@@ -15,7 +15,6 @@ namespace Helerion.Character
         public float smoothSpeed = 5f;
 
         private Vector3 _targetPos;
-        private bool _hasTarget;
 
         private void Update()
         {
@@ -24,7 +23,6 @@ namespace Helerion.Character
             float lat = GameManager.Instance.LocationService?.Latitude ?? 0f;
             float lng = GameManager.Instance.LocationService?.Longitude ?? 0f;
             _targetPos = GameManager.Instance.worldOrigin.LatLngToWorld(lat, lng);
-            _hasTarget = true;
 
             transform.position = Vector3.Lerp(transform.position, _targetPos, smoothSpeed * Time.deltaTime);
 

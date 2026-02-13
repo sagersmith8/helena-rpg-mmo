@@ -41,7 +41,7 @@ namespace Helerion.Game
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            if (gameConfig != null) Helerion.Config.GameConfig.Instance = gameConfig;
+            if (gameConfig != null) gameConfig.SetAsInstance();
             _locationService = new Helerion.Services.GpsLocationService();
             _api = new ApiClient();
             _savedCharacterId = PlayerPrefs.GetInt("helerion_character_id", 0);
