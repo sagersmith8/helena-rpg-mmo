@@ -66,7 +66,6 @@ namespace Helerion.Enemies
                 float distToPlayer = Vector3.Distance(myPos, playerTarget.position);
                 if (distToPlayer <= chaseRange)
                 {
-                    _chasing = true;
                     if (distToPlayer <= (CombatManager.Instance != null ? CombatManager.Instance.attackRange : 2f))
                     {
                         if (Time.time - _lastAttackTime >= attackCooldown && CombatManager.Instance != null)
@@ -85,8 +84,6 @@ namespace Helerion.Enemies
                     return;
                 }
             }
-
-            _chasing = false;
 
             // Follow path
             if (_path.Count == 0) { if (animator != null) animator.SetMoving(false); return; }
