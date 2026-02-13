@@ -1,35 +1,9 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { Configuration, AbilitiesApi, AncestriesApi, BackgroundsApi, CharactersApi, CharacterSkillsApi, ClassesApi, ItemsApi, SkillsApi, InventoryApi, AbilitiesRequiredItemsApi, AbilitiesRequiredLevelsApi } from "../../api/index"; // Adjust the import path as needed
-import type { Abilities, Ancestries, Backgrounds, Characters, CharacterSkills, Classes, Items, Skills, Inventory, AbilitiesRequiredItems, AbilitiesRequiredLevels } from "../../api/index"; // Adjust the import path as needed
+import { API, API_TYPES } from "./apiClient";
+import type { Skills, Abilities } from "../../api/index";
+
 type CsvRow = Record<string, string>;
-const configuration = new Configuration({basePath: 'http://98.127.121.74:3000'});
-const API = {
-    abilities: new AbilitiesApi(configuration),
-    ancestries: new AncestriesApi(configuration),
-    backgrounds: new BackgroundsApi(configuration),
-    characters: new CharactersApi(configuration),
-    characterSkills: new CharacterSkillsApi(configuration),
-    classes: new ClassesApi(configuration),
-    items: new ItemsApi(configuration),
-    skills: new SkillsApi(configuration),
-    inventory: new InventoryApi(configuration),
-    abilitiesRequiredLevels: new AbilitiesRequiredLevelsApi(configuration),
-    abilitiesRequiredItems: new AbilitiesRequiredItemsApi(configuration)
-}
-const API_TYPES = {
-    abilities: {} as Abilities,
-    ancestries: {} as Ancestries,
-    backgrounds: {} as Backgrounds,
-    characters: {} as Characters,
-    characterSkills: {} as CharacterSkills,
-    classes: {} as Classes,
-    items: {} as Items,
-    skills: {} as Skills,
-    inventory: {} as Inventory,
-    abilitiesRequiredLevels: {} as AbilitiesRequiredLevels,
-    abilitiesRequiredItems: {} as AbilitiesRequiredItems
-}
 
 function App() {
   const [jsonData, setJsonData] = useState<CsvRow[] | null>(null);

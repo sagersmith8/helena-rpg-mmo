@@ -4,7 +4,7 @@ import MapView, { Marker, PROVIDER_GOOGLE, Circle } from "react-native-maps";
 import * as Location from "expo-location";
 import * as SecureStore from 'expo-secure-store';
 
-import { AbilitiesApi, AbilitiesRequiredLevelsApi, AbilitiesRequiredItemsApi, AncestriesApi, CharactersApi, CharacterSkillsApi, Configuration, ClassesApi, BackgroundsApi, InventoryApi, ItemsApi, SkillsApi} from './api/index';
+import { api, config } from "./apiClient";
 import type { Abilities, AbilitiesRequiredLevels, AbilitiesRequiredItems, Ancestries, Characters, CharacterSkills, Classes, Backgrounds, Inventory, Items, Skills } from "./api/index";
 
 type Enemy = Characters & {
@@ -70,38 +70,15 @@ export default function App() {
   >([]);
   const [characterAbilities, setCharacterAbilities] = useState<Abilities[] | null>(null);
 
-  const imageHost = "http://98.127.121.74:3001/";
-  const config = new Configuration({basePath: 'http://98.127.121.74:3000'});
-  const classesApi = new ClassesApi(config);
   const [characterClasses, setCharacterClasses] = useState<Classes[]>([]);
-
-  const backgroundsApi = new BackgroundsApi(config);
   const [backgrounds, setBackgrounds] = useState<Backgrounds[]>([]);
-
-  const ancestriesApi = new AncestriesApi(config);
   const [ancestries, setAncestries] = useState<Ancestries[]>([]);
-
-  const skillsApi = new SkillsApi(config);
   const [skills, setSkills] = useState<Skills[]>([]);
-
-  const charactersApi = new CharactersApi(config);
-
-  const itemsApi = new ItemsApi(config);
   const [items, setItems] = useState<Items[]>([]);
-
-  const abilitiesApi = new AbilitiesApi(config);
   const [abilitiesList, setAbilitiesList] = useState<Abilities[]>([]);
-
-  const characterSkillsApi = new CharacterSkillsApi(config);
   const [characterSkills, setCharacterSkills] = useState<CharacterSkills[]>([]);
-
-  const abilitiesRequiredLevelsApi = new AbilitiesRequiredLevelsApi(config);
   const [abilitiesRequiredLevels, setAbilitiesRequiredLevels] = useState<AbilitiesRequiredLevels[]>([]);
-
-  const abilitiesRequiredItemsApi = new AbilitiesRequiredItemsApi(config);
   const [abilitiesRequiredItems, setAbilitiesRequiredItems] = useState<AbilitiesRequiredItems[]>([]);
-
-  const inventoryApi = new InventoryApi(config);
   const [inventory, setInventory] = useState<Inventory[]>([]);
 
   const [targetedEnemy, setTargetedEnemy] = useState<number | null>(null);
@@ -171,7 +148,7 @@ export default function App() {
         setInventory(newInventory);
 
         // PATCH the updated inventory item
-        inventoryApi
+        api.inventory
           .inventoryPatch({
             characterId: `eq.${updatedItem.characterId}`,
             itemId: `eq.${updatedItem.itemId}`,
@@ -184,7 +161,7 @@ export default function App() {
         setSelectedItem(null);
 
         // DELETE the item since quantity is 0
-        inventoryApi
+        api.inventory
           .inventoryDelete({
             characterId: `eq.${inventoryItem.characterId}`,
             itemId: `eq.${inventoryItem.itemId}`,
@@ -194,7 +171,7 @@ export default function App() {
 
       // ✅ PATCH character health to backend
       if (character) {
-        charactersApi
+        api.characters
           .charactersPatch({
             id: `eq.${character.id}`,
             characters: {
@@ -231,7 +208,7 @@ export default function App() {
 
         setInventory(newInventory);
 
-        inventoryApi.inventoryPatch({
+        api.inventory.inventoryPatch({
           characterId: `eq.${existingItem.characterId}`,
           itemId: `eq.${existingItem.itemId}`,
           inventory: { ...existingItem, quantity: newQuantity },
@@ -246,7 +223,7 @@ export default function App() {
         newInventory = [...inventory, newItem];
         setInventory(newInventory);
 
-        inventoryApi.inventoryPost({
+        api.inventory.inventoryPost({
           inventory: newItem,
         }).catch(handleApiError);
       }
@@ -379,7 +356,7 @@ export default function App() {
         const inventoryItem = newInventory.find((i) => i.itemId === item.id);
         if (!inventoryItem) return;
 
-        inventoryApi
+        api.inventory
           .inventoryPatch({
             characterId: `eq.${inventoryItem.characterId}`,
             itemId: `eq.${inventoryItem.itemId}`,
@@ -786,7 +763,7 @@ export default function App() {
         calculateAbilities(newCharacterSkills);
 
         // Persist change
-        characterSkillsApi.characterSkillsPatch({
+        api.characterSkills.characterSkillsPatch({
           characterId: `eq.${character?.id}`,
           skillId: `eq.${meleeSkill.id}`,
           characterSkills: newCharacterMeleeSkill,
@@ -867,7 +844,7 @@ export default function App() {
 
                 setCharacter(updatedChar);
 
-                charactersApi.charactersPatch({
+                api.characters.charactersPatch({
                   id: `eq.${character.id}`,
                   characters: {
                     level: newLevel,
@@ -907,7 +884,7 @@ export default function App() {
 
                 setCharacter(updatedChar);
 
-                charactersApi.charactersPatch({
+                api.characters.charactersPatch({
                   id: `eq.${character.id}`,
                   characters: {
                     experience: newExp,
@@ -944,7 +921,7 @@ export default function App() {
             );
         } else {
             setCharacter(prev => prev ? { ...prev, health: (prev.health ?? 10) - damage } : prev);
-            charactersApi.charactersPatch({
+            api.characters.charactersPatch({
                 id: `eq.${character.id}`,
                 characters: {
                   health: (character?.health ?? 0) - damage
@@ -1079,7 +1056,7 @@ export default function App() {
                   setInventory(newInventory);
 
                   // PATCH the updated inventory item
-                  inventoryApi
+                  api.inventory
                     .inventoryPatch({
                       characterId: `eq.${updatedItem.characterId}`,
                       itemId: `eq.${updatedItem.itemId}`,
@@ -1092,7 +1069,7 @@ export default function App() {
                   setSelectedItem(null);
 
                   // DELETE the item since quantity is 0
-                  inventoryApi
+                  api.inventory
                     .inventoryDelete({
                       characterId: `eq.${rockInInventory.characterId}`,
                       itemId: `eq.${rockInInventory.itemId}`,
@@ -1108,7 +1085,7 @@ export default function App() {
       (async () => {
         const fetchClasses = async () => {
           try {
-            const result = await classesApi.classesGet({}); // fully-typed GET request
+            const result = await api.classes.classesGet({}); // fully-typed GET request
             if (result) setCharacterClasses(result);
           } catch (err) {
             console.error('Failed to fetch classes:', err);
@@ -1119,7 +1096,7 @@ export default function App() {
 
         const fetchBackgrounds = async () => {
           try {
-            const result = await backgroundsApi.backgroundsGet({}); // fully-typed GET request
+            const result = await api.backgrounds.backgroundsGet({}); // fully-typed GET request
             if (result) setBackgrounds(result);
           } catch (err) {
             console.error('Failed to fetch backgrounds:', err);
@@ -1129,7 +1106,7 @@ export default function App() {
 
         const fetchAncestries = async () => {
           try {
-            const result = await ancestriesApi.ancestriesGet({}); // fully-typed GET request
+            const result = await api.ancestries.ancestriesGet({}); // fully-typed GET request
             if (result) setAncestries(result);
           } catch (err) {
             console.error('Failed to fetch ancestries:', err);
@@ -1139,7 +1116,7 @@ export default function App() {
 
         const fetchSkills = async () => {
           try {
-            const result = await skillsApi.skillsGet({}); // fully-typed GET request
+            const result = await api.skills.skillsGet({}); // fully-typed GET request
             if (result) setSkills(result);
           } catch (err) {
             console.error('Failed to fetch skills:', err);
@@ -1149,7 +1126,7 @@ export default function App() {
 
         const fetchItems = async () => {
           try {
-            const result = await itemsApi.itemsGet({}); // fully-typed GET request
+            const result = await api.items.itemsGet({}); // fully-typed GET request
             if (result) {
                 setItems(result);
             }
@@ -1161,7 +1138,7 @@ export default function App() {
 
         const fetchAbilities = async () => {
           try {
-            const result = await abilitiesApi.abilitiesGet({}); // fully-typed GET request
+            const result = await api.abilities.abilitiesGet({}); // fully-typed GET request
             if (result) setAbilitiesList(result);
           } catch (err) {
             console.error('Failed to fetch abilities:', err);
@@ -1171,7 +1148,7 @@ export default function App() {
 
         const fetchAbilitiesRequiredItems = async () => {
           try {
-            const result = await abilitiesRequiredItemsApi.abilitiesRequiredItemsGet({}); // fully-typed GET request
+            const result = await api.abilitiesRequiredItems.abilitiesRequiredItemsGet({}); // fully-typed GET request
             if (result) setAbilitiesRequiredItems(result);
           } catch (err) {
             console.error('Failed to fetch abilities required items:', err);
@@ -1181,7 +1158,7 @@ export default function App() {
 
         const fetchAbilitiesRequiredLevels = async () => {
           try {
-            const result = await abilitiesRequiredLevelsApi.abilitiesRequiredLevelsGet({}); // fully-typed GET request
+            const result = await api.abilitiesRequiredLevels.abilitiesRequiredLevelsGet({}); // fully-typed GET request
             if (result) setAbilitiesRequiredLevels(result);
           } catch (err) {
             console.error('Failed to fetch abilities required levels:', err);
@@ -1196,7 +1173,7 @@ export default function App() {
               console.warn("No character ID found, creating new character");
               return;
             }
-             const c = await charactersApi.charactersGet({
+             const c = await api.characters.charactersGet({
                 id: `eq.${id}`, // PostgREST syntax
                 limit: "1",     // just to be safe
               });
@@ -1204,12 +1181,12 @@ export default function App() {
               const loadedCharacter = c[0] || null;
               setCharacter(loadedCharacter);
               if (loadedCharacter) {
-                const loadedInventory = await inventoryApi.inventoryGet({
+                const loadedInventory = await api.inventory.inventoryGet({
                     characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
                     limit: "100", // Adjust as needed
                 });
                 setInventory(loadedInventory || []);
-                const loadedItems = items.length != 0 ? items : await itemsApi.itemsGet({});
+                const loadedItems = items.length != 0 ? items : await api.items.itemsGet({});
                 setItems(loadedItems);
                 loadedInventory?.forEach((inv) => {
                   if (inv.equippedSlot) {
@@ -1233,16 +1210,16 @@ export default function App() {
                   }
                 });
                 calculateCharacterRange(loadedInventory, loadedCharacter);
-                const loadedCharacterSkills = await characterSkillsApi.characterSkillsGet({
+                const loadedCharacterSkills = await api.characterSkills.characterSkillsGet({
                     characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
                     limit: "100", // Adjust as needed
                 });
                 setCharacterSkills(loadedCharacterSkills || []);
-                const loadedAbilities = await abilitiesApi.abilitiesGet({});
+                const loadedAbilities = await api.abilities.abilitiesGet({});
                 setAbilitiesList(loadedAbilities || []);
-                const loadedAbilityRequiredItems =  await abilitiesRequiredItemsApi.abilitiesRequiredItemsGet({});
+                const loadedAbilityRequiredItems =  await api.abilitiesRequiredItems.abilitiesRequiredItemsGet({});
                 setAbilitiesRequiredItems(loadedAbilityRequiredItems || []);
-                const loadedAbilityRequiredLevels =  await abilitiesRequiredLevelsApi.abilitiesRequiredLevelsGet({});
+                const loadedAbilityRequiredLevels =  await api.abilitiesRequiredLevels.abilitiesRequiredLevelsGet({});
                 setAbilitiesRequiredLevels(loadedAbilityRequiredLevels || []);
                 calculateAbilities(
                   loadedCharacterSkills || [], loadedInventory || [], loadedAbilities || [], loadedAbilityRequiredLevels || [], loadedAbilityRequiredItems || [], loadedItems || []
@@ -1440,7 +1417,7 @@ export default function App() {
                       {ancestry && (
                           <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setAncestryCollapsed(!isAncestryCollapsed)}>
                               <Text style={styles.selectedItemTitle}>{ancestry.name}</Text>
-                              <Image source={{ uri: imageHost + ancestry.image }} style={styles.selectedItemImage} />
+                              <Image source={{ uri: config.imageHost + ancestry.image }} style={styles.selectedItemImage} />
                               <Text style={styles.selectedItemDescription}>{ancestry.description}</Text>
 
                               { !isAncestryCollapsed && (
@@ -1523,7 +1500,7 @@ export default function App() {
                           contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
                           renderItem={({ item }) => (
                               <TouchableOpacity style={styles.statBlock} onPress={() => {setAncestry(item); setAncestryCollapsed(false);}}>
-                                  <Image source={{ uri: imageHost + item.image }} style={styles.slotIcon} />
+                                  <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
                               </TouchableOpacity>
                           )}
                       />
@@ -1535,7 +1512,7 @@ export default function App() {
                         {background && (
                             <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setBackgroundCollapsed(!isBackgroundCollapsed)}>
                                 <Text style={styles.selectedItemTitle}>{background.name}</Text>
-                                <Image source={{ uri: imageHost + background.image }} style={styles.selectedItemImage} />
+                                <Image source={{ uri: config.imageHost + background.image }} style={styles.selectedItemImage} />
                                 <Text style={styles.selectedItemDescription}>{background.description}</Text>
 
                                 { !isBackgroundCollapsed && (
@@ -1612,7 +1589,7 @@ export default function App() {
                             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
                             renderItem={({ item }) => (
                                 <TouchableOpacity style={styles.statBlock} onPress={() => {setBackground(item); setBackgroundCollapsed(false);}}>
-                                    <Image source={{ uri: imageHost + item.image }} style={styles.slotIcon} />
+                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
                                 </TouchableOpacity>
                             )}
                         />
@@ -1624,7 +1601,7 @@ export default function App() {
                         {characterClass && (
                             <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setCharacterClassCollapsed(!isCharacterClassCollapsed)}>
                                 <Text style={styles.selectedItemTitle}>{characterClass.name}</Text>
-                                <Image source={{ uri: imageHost + characterClass.image }} style={styles.selectedItemImage} />
+                                <Image source={{ uri: config.imageHost + characterClass.image }} style={styles.selectedItemImage} />
                                 <Text style={styles.selectedItemDescription}>{characterClass.description}</Text>
 
                                 { !isCharacterClassCollapsed && (
@@ -1701,7 +1678,7 @@ export default function App() {
                             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
                             renderItem={({ item }) => (
                                 <TouchableOpacity style={styles.statBlock} onPress={() => {setCharacterClass(item); setCharacterClassCollapsed(false);}}>
-                                    <Image source={{ uri: imageHost + item.image }} style={styles.slotIcon} />
+                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
                                 </TouchableOpacity>
                             )}
                         />
@@ -1738,7 +1715,7 @@ export default function App() {
                         {selectedAbility && (
                             <View style={styles.selectedItemContainer}>
                                 <Text style={styles.selectedItemTitle}>{selectedAbility.name}</Text>
-                                <Image source={{ uri: imageHost + selectedAbility.image}} style={styles.selectedItemImage} />
+                                <Image source={{ uri: config.imageHost + selectedAbility.image}} style={styles.selectedItemImage} />
                                 <Text style={styles.selectedItemDescription}>{selectedAbility.description}</Text>
                                 <Text style={styles.selectedItemQuantity}>Range: {selectedAbility.range}m</Text>
                                 <Text style={styles.selectedItemQuantity}>Damage:{selectedAbility.damage}</Text>
@@ -1765,7 +1742,7 @@ export default function App() {
                             contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
                             renderItem={({ item }) => (
                                 <TouchableOpacity style={styles.statBlock} onPress={() => setSelectedAbility(item)}>
-                                    <Image source={{ uri: imageHost + item.image }} style={styles.slotIcon} />
+                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
                                 </TouchableOpacity>
                                 )}
                         />
@@ -1801,7 +1778,7 @@ export default function App() {
                         };
 
                         // Post character to API
-                        await charactersApi.charactersPost({
+                        await api.characters.charactersPost({
                           characters: newCharacter,
                         });
 
@@ -1817,7 +1794,7 @@ export default function App() {
                         }));
 
                         await characterSkills.forEach(skill => {
-                            characterSkillsApi.characterSkillsPost({
+                            api.characterSkills.characterSkillsPost({
                               characterSkills: skill,
                             });
                         });
@@ -1839,7 +1816,7 @@ export default function App() {
       return (
         <View style={styles.container}>
           <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-            <Image source={{ uri: imageHost + "plain-dagger.png"}} width={100} height={100} />
+            <Image source={{ uri: config.imageHost + "plain-dagger.png"}} width={100} height={100} />
           </View>
         </View>
       );
@@ -1931,7 +1908,7 @@ export default function App() {
           onPress={() => setTargetedEnemy(null)} // Deselect enemy on character marker press
         >
             <View style={{ width: 20, height: 20 }}>
-                <Image source={{ uri: imageHost + characterClasses.find((c) => c.id == character.classId).image}} width={20} height={20}/>
+                <Image source={{ uri: config.imageHost + characterClasses.find((c) => c.id == character.classId).image}} width={20} height={20}/>
             </View>
         </Marker>
         {itemsOnMap.map((item, index) => {
@@ -1945,7 +1922,7 @@ export default function App() {
                     description={itemData.description}
                 >
                     <View style={{ width: 20, height: 20 }}>
-                        <Image source={{ uri: imageHost + itemData.image }} style={{ width: 20, height: 20 }} />
+                        <Image source={{ uri: config.imageHost + itemData.image }} style={{ width: 20, height: 20 }} />
                     </View>
                 </Marker>
             );
@@ -1961,7 +1938,7 @@ export default function App() {
             >
               <View style={{ width: 20, height: 20 }}>
                 <Image
-                  source={{ uri: imageHost + ancestries.find(a => a.id === e.ancestry)?.image }} // assuming Goblin has id 1
+                  source={{ uri: config.imageHost + ancestries.find(a => a.id === e.ancestry)?.image }} // assuming Goblin has id 1
                   width={20}
                   height={20}
                   style={{
@@ -2036,19 +2013,19 @@ export default function App() {
                 <View>
                     <View style={styles.detailsHudDivider} />
                     <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                        <Image source={{ uri: imageHost + ancestries.find((c) => c.id == character.ancestry)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Image source={{ uri: config.imageHost + ancestries.find((c) => c.id == character.ancestry)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
                         <Text style={styles.detailsHudTextStat}>
                           {ancestries.find((c) => c.id == character.ancestry)?.name}
                         </Text>
                     </View>
                     <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                        <Image source={{ uri: imageHost + backgrounds.find((c) => c.id == character.background)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Image source={{ uri: config.imageHost + backgrounds.find((c) => c.id == character.background)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
                         <Text style={styles.detailsHudTextStat}>
                       {backgrounds.find((c) => c.id == character.background)?.name}
                     </Text>
                     </View>
                     <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                        <Image source={{ uri: imageHost + characterClasses.find((c) => c.id == character.classId)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
+                        <Image source={{ uri: config.imageHost + characterClasses.find((c) => c.id == character.classId)?.image}} style={{ width: 20, height: 20, marginRight: 5}} />
                         <Text style={styles.detailsHudTextStat}>
                           {characterClasses.find((c) => c.id == character.classId)?.name}
                         </Text>
@@ -2070,13 +2047,13 @@ export default function App() {
 
         <View style={styles.equipmentContainer}>
           <TouchableOpacity style={styles.statBlock} onPress={() => setEquipmentOpen(true)}>
-          <Image source={{ uri: imageHost + "abdominal-armor.png"}} style={styles.slotIcon} />
+          <Image source={{ uri: config.imageHost + "abdominal-armor.png"}} style={styles.slotIcon} />
           </TouchableOpacity>
             <TouchableOpacity style={styles.statBlock} onPress={() => setInventoryOpen(true)}>
-                <Image source={{ uri: imageHost + "knapsack.png"}} style={styles.slotIcon} />
+                <Image source={{ uri: config.imageHost + "knapsack.png"}} style={styles.slotIcon} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.statBlock} onPress={() => setSkillTreeOpen(true)}>
-                <Image source={{ uri: imageHost + "skills.png"}} style={styles.slotIcon} />
+                <Image source={{ uri: config.imageHost + "skills.png"}} style={styles.slotIcon} />
             </TouchableOpacity>
         </View>
         {/* Skill Model */}
@@ -2094,7 +2071,7 @@ export default function App() {
                 return (
                     <View style={styles.selectedItemContainer}>
                         <Text style={styles.selectedItemTitle}>{skillData.name}</Text>
-                        <Image source={{ uri: imageHost + skillData.image}} style={styles.selectedItemImage} />
+                        <Image source={{ uri: config.imageHost + skillData.image}} style={styles.selectedItemImage} />
                         <Text style={styles.selectedItemTitle}>{skillData.name}</Text>
                         <Text style={styles.selectedItemDescription}>{skillData.description}</Text>
                         <View style={styles.barContainer}>
@@ -2113,7 +2090,7 @@ export default function App() {
                     if (!skillData) return null;
                     return (
                       <TouchableOpacity style={styles.statBlock} key={item.skillId} onPress={() => setSelectedSkill(item)}>
-                        <Image source={{ uri: imageHost + skillData.image}} style={styles.slotIcon} />
+                        <Image source={{ uri: config.imageHost + skillData.image}} style={styles.slotIcon} />
                         <Text style={styles.statLabel}>{skillData.name}</Text>
                         <Text style={styles.statValue}>Lvl: {item.level}</Text>
                       </TouchableOpacity>
@@ -2139,43 +2116,43 @@ export default function App() {
                         <View>
                             <View style={styles.row}>
                                 <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("main_hand");}} >
-                                    <Image source={{ uri: imageHost + (mainhandSlot?.image ?? "plain-dagger.png")}} style={[styles.slotIcon, !mainhandSlot && { opacity: 0.4}]} />
+                                    <Image source={{ uri: config.imageHost + (mainhandSlot?.image ?? "plain-dagger.png")}} style={[styles.slotIcon, !mainhandSlot && { opacity: 0.4}]} />
                                     <Text style={styles.statLabel}>Main Hand</Text>
                                     <Text style={styles.statValue}>{mainhandSlot?.name || "None"}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("offhand");}}>
-                                    <Image source={{ uri: imageHost + (offhandSlot?.image ?? "shield.png")}} style={[styles.slotIcon, !offhandSlot && { opacity: 0.4}]} />
+                                    <Image source={{ uri: config.imageHost + (offhandSlot?.image ?? "shield.png")}} style={[styles.slotIcon, !offhandSlot && { opacity: 0.4}]} />
                                     <Text style={styles.statLabel}>Off Hand</Text>
                                     <Text style={styles.statValue}>{offhandSlot?.name || "None"}</Text>
                                 </TouchableOpacity>
                             </View>
                             <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("head");}} >
                                 {/* Filter the inventory for equipped items, filter quipped items for equipmentSlot = head */}
-                                <Image source={{ uri: imageHost + (headSlot?.image ?? "visored-helm.png")}} style={[styles.slotIcon, !headSlot && { opacity: 0.4}]} />
+                                <Image source={{ uri: config.imageHost + (headSlot?.image ?? "visored-helm.png")}} style={[styles.slotIcon, !headSlot && { opacity: 0.4}]} />
                                 <Text style={styles.statLabel}>Head</Text>
                                 <Text style={styles.statValue}>{headSlot?.name || "None"}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("chest");}} >
                                 {/* Filter the inventory for equipped items, filter quipped items for equipmentSlot = head */}
-                                <Image source={{ uri: imageHost + (chestSlot?.image ?? "abdominal-armor.png")}} style={[styles.slotIcon, !chestSlot && { opacity: 0.4}]} />
+                                <Image source={{ uri: config.imageHost + (chestSlot?.image ?? "abdominal-armor.png")}} style={[styles.slotIcon, !chestSlot && { opacity: 0.4}]} />
                                 <Text style={styles.statLabel}>Chest</Text>
                                 <Text style={styles.statValue}>{chestSlot?.name || "None"}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("hands");}} >
                                 {/* Filter the inventory for equipped items, filter quipped items for equipmentSlot = head */}
-                                <Image source={{ uri: imageHost + (handsSlot?.image ?? "gauntlet.png")}} style={[styles.slotIcon, !handsSlot && { opacity: 0.4}]} />
+                                <Image source={{ uri: config.imageHost + (handsSlot?.image ?? "gauntlet.png")}} style={[styles.slotIcon, !handsSlot && { opacity: 0.4}]} />
                                 <Text style={styles.statLabel}>Hands</Text>
                                 <Text style={styles.statValue}>{handsSlot?.name || "None"}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("legs");}} >
                                 {/* Filter the inventory for equipped items, filter quipped items for equipmentSlot = head */}
-                                <Image source={{ uri: imageHost + (legsSlot?.image ?? "armored-pants.png")}} style={[styles.slotIcon, !legsSlot && { opacity: 0.4}]} />
+                                <Image source={{ uri: config.imageHost + (legsSlot?.image ?? "armored-pants.png")}} style={[styles.slotIcon, !legsSlot && { opacity: 0.4}]} />
                                 <Text style={styles.statLabel}>Leg</Text>
                                 <Text style={styles.statValue}>{legsSlot?.name || "None"}</Text>
                             </TouchableOpacity>
                         <TouchableOpacity style={styles.statBlock} onPress={() => { setSelectedSlot("feet");}} >
                             {/* Filter the inventory for equipped items, filter quipped items for equipmentSlot = head */}
-                            <Image source={{ uri: imageHost + (feetSlot?.image ?? "leg-armor.png")}} style={[styles.slotIcon, !feetSlot && { opacity: 0.4}]} />
+                            <Image source={{ uri: config.imageHost + (feetSlot?.image ?? "leg-armor.png")}} style={[styles.slotIcon, !feetSlot && { opacity: 0.4}]} />
                             <Text style={styles.statLabel}>Feet</Text>
                             <Text style={styles.statValue}>{feetSlot?.name || "None"}</Text>
                         </TouchableOpacity>
@@ -2225,7 +2202,7 @@ export default function App() {
                         <View style={styles.itemBlock}>
                           <Text style={styles.blockTitle}>Current</Text>
                           <Image
-                            source={{ uri: imageHost + (currentlyEquipped?.image ?? "placeholder.png") }}
+                            source={{ uri: config.imageHost + (currentlyEquipped?.image ?? "placeholder.png") }}
                             style={styles.itemImage}
                           />
                           <Text style={styles.itemName}>{currentlyEquipped?.name ?? "None"}</Text>
@@ -2243,7 +2220,7 @@ export default function App() {
                         {/* Candidate Item */}
                         <View style={styles.itemBlock}>
                           <Text style={styles.blockTitle}>Candidate</Text>
-                          <Image source={{ uri: imageHost + selectedEquipment.image }} style={styles.itemImage} />
+                          <Image source={{ uri: config.imageHost + selectedEquipment.image }} style={styles.itemImage} />
                           <Text style={styles.itemName}>{selectedEquipment.name}</Text>
                           {selectedEquipment && (
                             <>
@@ -2297,7 +2274,7 @@ export default function App() {
                                  console.log("Selected equipment", item)
                               }}
                             >
-                              <Image source={{ uri: imageHost + item.image}} style={styles.slotIcon} />
+                              <Image source={{ uri: config.imageHost + item.image}} style={styles.slotIcon} />
                               <Text style={styles.statLabel}>{item.name}</Text>
                             </TouchableOpacity>
                           );
@@ -2319,7 +2296,7 @@ export default function App() {
                 return (
                     <View style={styles.selectedItemContainer}>
                         <Text style={styles.selectedItemTitle}>{selectedItem.name}</Text>
-                        <Image source={{ uri: imageHost + itemData.image}} style={styles.selectedItemImage} />
+                        <Image source={{ uri: config.imageHost + itemData.image}} style={styles.selectedItemImage} />
                         <Text style={styles.selectedItemTitle}>{itemData.name}</Text>
                         <Text style={styles.selectedItemDescription}>{itemData.description}</Text>
                         <Text style={styles.selectedItemQuantity}>Quantity: {selectedItem.quantity}</Text>
@@ -2340,7 +2317,7 @@ export default function App() {
                     if (!itemData) return null;
                     return (
                       <TouchableOpacity style={styles.statBlock} key={item.itemId} onPress={() => setSelectedItem(item)}>
-                        <Image source={{ uri: imageHost + itemData.image}} style={styles.slotIcon} />
+                        <Image source={{ uri: config.imageHost + itemData.image}} style={styles.slotIcon} />
                         <Text style={styles.statLabel}>{item.name}</Text>
                         <Text style={styles.statValue}>{item.quantity}</Text>
                       </TouchableOpacity>
@@ -2386,7 +2363,7 @@ export default function App() {
                 }}
               >
                 <Image
-                  source={{ uri: imageHost + ability.image }}
+                  source={{ uri: config.imageHost + ability.image }}
                   style={styles.slotIcon}
                 />
               </TouchableOpacity>
