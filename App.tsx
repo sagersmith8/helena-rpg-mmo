@@ -1,44 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView, TextInput, FlatList, Image } from "react-native";
+import { View, Text, TouchableOpacity, Modal, ScrollView, TextInput, FlatList, Image } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Circle } from "react-native-maps";
 import * as Location from "expo-location";
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 
 import { api, config } from "./apiClient";
 import type { Abilities, AbilitiesRequiredLevels, AbilitiesRequiredItems, Ancestries, Characters, CharacterSkills, Classes, Backgrounds, Inventory, Items, Skills } from "./api/index";
-
-type Enemy = Characters & {
-  path: { lat: number; lng: number }[];
-  step: number;
-  inventory: number[];
-  lastAttackTime?: number;
-};
-
-const generateCirclePoints = (lat: number, lng: number, radiusMeters: number, numPoints: number) => {
-  const points = [];
-  const R = 6378137; // Earth radius in meters
-  const rad = radiusMeters / R;
-
-  for (let i = 0; i < numPoints; i++) {
-    const theta = (2 * Math.PI * i) / numPoints;
-    const dLat = rad * Math.cos(theta);
-    const dLng = rad * Math.sin(theta) / Math.cos((lat * Math.PI) / 180);
-
-    points.push({
-      lat: lat + (dLat * 180) / Math.PI,
-      lng: lng + (dLng * 180) / Math.PI,
-    });
-  }
-
-  return points;
-};
+import { type Enemy, type FloatingText } from "./types";
+import { generateCirclePoints, getDistanceMeters } from "./utils/mapUtils";
+import { calculateXpToNextLevel, calculateSpeed as calcSpeed, calculateAttributes as calcAttrs, calculateHP as calcHP, calculateMana as calcMana } from "./utils/characterUtils";
+import { useReferenceData } from "./hooks/useReferenceData";
+import { CharacterCreationScreen, type CharacterCreationData } from "./screens/CharacterCreationScreen";
+import { styles } from "./styles";
 
 export default function App() {
   const mapRef = useRef(null);
   const [region, setRegion] = useState(null);
-  const [isAncestryCollapsed, setAncestryCollapsed] = useState(true);
-  const [isBackgroundCollapsed, setBackgroundCollapsed] = useState(true);
-  const [isCharacterClassCollapsed, setCharacterClassCollapsed] = useState(true);
   let subscription: Location.LocationSubscription | null = null;
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [enemies, setEnemies] = useState<Enemy[]>([]);
@@ -48,12 +25,6 @@ export default function App() {
   const [selectedSkill, setSelectedSkill] = useState<CharacterSkills | null>(null);
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [character, setCharacter] = useState<Characters | null>(null);
-  const [name, setName] = useState(null);
-  const [ancestry, setAncestry] = useState<Ancestries | null>(null);
-  const [background, setBackground] = useState<Backgrounds | null>(null);
-  const [selectedAbility, setSelectedAbility] = useState<Abilities | null>(null);
-  const [characterClass, setCharacterClass] = useState<Classes | null>(null);
-  const [abilities, setAbilities] = useState({ strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 });
   const [feats, setFeats] = useState([]);
   const [detailsHudExpanded, setDetailsHudExpanded] = useState(false);
   const [headSlot, setHeadSlot] = useState<Items | null>(null);
@@ -65,21 +36,26 @@ export default function App() {
   const [mainhandSlot, setMainhandSlot] = useState<Items | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<Items | null>(null);
-  const [floatingTexts, setFloatingTexts] = useState<
-    { id: string; lat: number; lng: number; text: string; color: string, expiresAt: number }[]
-  >([]);
+  const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [characterAbilities, setCharacterAbilities] = useState<Abilities[] | null>(null);
 
-  const [characterClasses, setCharacterClasses] = useState<Classes[]>([]);
-  const [backgrounds, setBackgrounds] = useState<Backgrounds[]>([]);
-  const [ancestries, setAncestries] = useState<Ancestries[]>([]);
-  const [skills, setSkills] = useState<Skills[]>([]);
-  const [items, setItems] = useState<Items[]>([]);
-  const [abilitiesList, setAbilitiesList] = useState<Abilities[]>([]);
+  const {
+    characterClasses,
+    backgrounds,
+    ancestries,
+    skills,
+    items,
+    abilitiesList,
+    abilitiesRequiredLevels,
+    abilitiesRequiredItems,
+  } = useReferenceData();
+
   const [characterSkills, setCharacterSkills] = useState<CharacterSkills[]>([]);
-  const [abilitiesRequiredLevels, setAbilitiesRequiredLevels] = useState<AbilitiesRequiredLevels[]>([]);
-  const [abilitiesRequiredItems, setAbilitiesRequiredItems] = useState<AbilitiesRequiredItems[]>([]);
   const [inventory, setInventory] = useState<Inventory[]>([]);
+
+  const ancestry = character ? ancestries.find((a) => a.id === character.ancestry) ?? null : null;
+  const background = character ? backgrounds.find((b) => b.id === character.background) ?? null : null;
+  const characterClass = character ? characterClasses.find((c) => c.id === character.classId) ?? null : null;
 
   const [targetedEnemy, setTargetedEnemy] = useState<number | null>(null);
 
@@ -378,12 +354,16 @@ export default function App() {
       }
 
 
-    // Save character ID
-    async function saveCharacterId(id: number) {
+    // Save character ID (pass null to clear)
+    async function saveCharacterId(id: number | null) {
       try {
-        await SecureStore.setItemAsync('characterId', id.toString());
+        if (id == null) {
+          await SecureStore.deleteItemAsync("characterId");
+        } else {
+          await SecureStore.setItemAsync("characterId", id.toString());
+        }
       } catch (e) {
-        console.error('Failed to save character ID', e);
+        console.error("Failed to save character ID", e);
       }
     }
 
@@ -398,12 +378,13 @@ export default function App() {
     }
 
   function calculateCharacterRange(newInventory: Inventory[] = inventory, newCharacter: Characters = character) {
-      var weight = 0;
-      inventory.forEach((inv) => {
+      let weight = 0;
+      newInventory.forEach((inv) => {
         if (inv.equippedSlot != null) {
           const item = items.find((it) => it.id === inv.itemId);
           weight += item?.weight ?? 0;
-      }});
+        }
+      });
       const calculatedRange = (newCharacter?.speed ?? 0) - ((
           weight
         ) / ((character?.strength ?? 1) * 5));
@@ -453,35 +434,6 @@ export default function App() {
   }
 
 
-  function calculateAttributes() {
-    return {
-      STR: 10 + (ancestry?.bonusStrength ?? 0) + (backgrounds?.bonusStrength ?? 0) + (characterClass?.bonusStrength ?? 0),
-      DEX: 10 + (ancestry?.bonusDexterity ?? 0) + (backgrounds?.bonusDexterity ?? 0) + (characterClass?.bonusDexterity ?? 0),
-      CON: 10 + (ancestry?.bonusConstitution ?? 0) + (backgrounds?.bonusConstitution ?? 0) + (characterClass?.bonusConstitution ?? 0),
-      INT: 10 + (ancestry?.bonusIntelligence ?? 0) + (backgrounds?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0),
-      WIS: 10 + (ancestry?.bonusWisdom ?? 0) + (backgrounds?.bonusWisdom ?? 0) + (characterClass?.bonusWisdom ?? 0),
-      CHA: 10 + (ancestry?.bonusCharisma ?? 0) + (backgrounds?.bonusCharisma ?? 0) + (characterClass?.bonusCharisma ?? 0),
-    };
-  }
-
-  function getDistanceMeters(loc1: {lat: number, lon: number}, loc2: {lat: number, lon: number}) {
-      const R = 6371000; // radius of Earth in meters
-      const φ1 = loc1.lat * Math.PI / 180;
-      const φ2 = loc2.lat * Math.PI / 180;
-      const Δφ = (loc2.lat - loc1.lat) * Math.PI / 180;
-      const Δλ = (loc2.lon - loc1.lon) * Math.PI / 180;
-
-      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ/2) * Math.sin(Δλ/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-      return R * c;
-  }
-
-  function calculateSpeed() {
-    return 30 + (ancestry?.bonusSpeed ?? 0) + (background?.bonusSpeed ?? 0) + (characterClass?.bonusSpeed ?? 0);
-  }
 
   function calculateAC() {
     return (headSlot?.armorClass ?? 0) + 
@@ -490,30 +442,6 @@ export default function App() {
           (legsSlot?.armorClass ?? 0) +
           (feetSlot?.armorClass ?? 0)
         ;
-    }
-
-    function calculateHP() {
-        return 10 + (ancestry?.bonusConstitution ?? 0) + (background?.bonusConstitution ?? 0) + (characterClass?.bonusConstitution ?? 0);
-    }
-
-    function calculateMana() {
-        return 10 + (ancestry?.bonusIntelligence ?? 0) + (background?.bonusIntelligence ?? 0) + (characterClass?.bonusIntelligence ?? 0);
-    }
-
-    function calculateXpToNextLevel(n: number): number {
-        if (n < 1) {
-          return 1;
-        }
-        let xpToNextLevel = 2, multiplier = 1.1;
-        for (let level = 1; level < n ; level++){
-          xpToNextLevel = Math.ceil(xpToNextLevel * multiplier);
-          if (level < 200) {
-            if (level % 10 == 0) {
-              multiplier = multiplier = Math.max(multiplier - 0.005, 1.01);
-            }
-          }
-        }
-        return xpToNextLevel;
     }
 
     async function spawnEnemy(latitude: number, longitude: number) {
@@ -1083,89 +1011,6 @@ export default function App() {
 
   useEffect(() => {
       (async () => {
-        const fetchClasses = async () => {
-          try {
-            const result = await api.classes.classesGet({}); // fully-typed GET request
-            if (result) setCharacterClasses(result);
-          } catch (err) {
-            console.error('Failed to fetch classes:', err);
-          }
-        };
-
-        fetchClasses();
-
-        const fetchBackgrounds = async () => {
-          try {
-            const result = await api.backgrounds.backgroundsGet({}); // fully-typed GET request
-            if (result) setBackgrounds(result);
-          } catch (err) {
-            console.error('Failed to fetch backgrounds:', err);
-          }
-        };
-        fetchBackgrounds();
-
-        const fetchAncestries = async () => {
-          try {
-            const result = await api.ancestries.ancestriesGet({}); // fully-typed GET request
-            if (result) setAncestries(result);
-          } catch (err) {
-            console.error('Failed to fetch ancestries:', err);
-          }
-        };
-        fetchAncestries();
-
-        const fetchSkills = async () => {
-          try {
-            const result = await api.skills.skillsGet({}); // fully-typed GET request
-            if (result) setSkills(result);
-          } catch (err) {
-            console.error('Failed to fetch skills:', err);
-          }
-        };
-        fetchSkills();
-
-        const fetchItems = async () => {
-          try {
-            const result = await api.items.itemsGet({}); // fully-typed GET request
-            if (result) {
-                setItems(result);
-            }
-          } catch (err) {
-            console.error('Failed to fetch items:', err);
-          }
-        };
-        fetchItems();
-
-        const fetchAbilities = async () => {
-          try {
-            const result = await api.abilities.abilitiesGet({}); // fully-typed GET request
-            if (result) setAbilitiesList(result);
-          } catch (err) {
-            console.error('Failed to fetch abilities:', err);
-          }
-        };
-        fetchAbilities();
-
-        const fetchAbilitiesRequiredItems = async () => {
-          try {
-            const result = await api.abilitiesRequiredItems.abilitiesRequiredItemsGet({}); // fully-typed GET request
-            if (result) setAbilitiesRequiredItems(result);
-          } catch (err) {
-            console.error('Failed to fetch abilities required items:', err);
-          }
-        };
-        fetchAbilitiesRequiredItems();
-
-        const fetchAbilitiesRequiredLevels = async () => {
-          try {
-            const result = await api.abilitiesRequiredLevels.abilitiesRequiredLevelsGet({}); // fully-typed GET request
-            if (result) setAbilitiesRequiredLevels(result);
-          } catch (err) {
-            console.error('Failed to fetch abilities required levels:', err);
-          }
-        };
-        fetchAbilitiesRequiredLevels();
-
         const fetchCharacter = async () => {
           try {
             const id = await loadCharacterId();
@@ -1173,61 +1018,52 @@ export default function App() {
               console.warn("No character ID found, creating new character");
               return;
             }
-             const c = await api.characters.charactersGet({
-                id: `eq.${id}`, // PostgREST syntax
-                limit: "1",     // just to be safe
+            const c = await api.characters.charactersGet({
+              id: `eq.${id}`,
+              limit: "1",
+            });
+            const loadedCharacter = c[0] || null;
+            setCharacter(loadedCharacter);
+            if (loadedCharacter) {
+              const loadedInventory = await api.inventory.inventoryGet({
+                characterId: `eq.${loadedCharacter.id}`,
+                limit: "100",
               });
-
-              const loadedCharacter = c[0] || null;
-              setCharacter(loadedCharacter);
-              if (loadedCharacter) {
-                const loadedInventory = await api.inventory.inventoryGet({
-                    characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
-                    limit: "100", // Adjust as needed
-                });
-                setInventory(loadedInventory || []);
-                const loadedItems = items.length != 0 ? items : await api.items.itemsGet({});
-                setItems(loadedItems);
-                loadedInventory?.forEach((inv) => {
-                  if (inv.equippedSlot) {
-                    const it = loadedItems?.find((i) => i.id == inv.itemId);
-                    if (it == null) return;
-                    if (inv.equippedSlot === "head") {
-                      setHeadSlot(it);
-                    } else if (inv.equippedSlot === "chest") {
-                      setChestSlot(it);
-                    } else if (inv.equippedSlot === "hands") {
-                      setHandsSlot(it);
-                    } else if (inv.equippedSlot === "legs") {
-                      setLegsSlot(it);
-                    } else if (inv.equippedSlot === "feet") {
-                      setFeetSlot(it);
-                    } else if (inv.equippedSlot === "main_hand") {
-                      setMainhandSlot(it);
-                    } else if (inv.equippedSlot === "offhand") {
-                      setOffhandSlot(it);
-                    }
-                  }
-                });
-                calculateCharacterRange(loadedInventory, loadedCharacter);
-                const loadedCharacterSkills = await api.characterSkills.characterSkillsGet({
-                    characterId: `eq.${loadedCharacter.id}`, // PostgREST syntax
-                    limit: "100", // Adjust as needed
-                });
-                setCharacterSkills(loadedCharacterSkills || []);
-                const loadedAbilities = await api.abilities.abilitiesGet({});
-                setAbilitiesList(loadedAbilities || []);
-                const loadedAbilityRequiredItems =  await api.abilitiesRequiredItems.abilitiesRequiredItemsGet({});
-                setAbilitiesRequiredItems(loadedAbilityRequiredItems || []);
-                const loadedAbilityRequiredLevels =  await api.abilitiesRequiredLevels.abilitiesRequiredLevelsGet({});
-                setAbilitiesRequiredLevels(loadedAbilityRequiredLevels || []);
-                calculateAbilities(
-                  loadedCharacterSkills || [], loadedInventory || [], loadedAbilities || [], loadedAbilityRequiredLevels || [], loadedAbilityRequiredItems || [], loadedItems || []
-                );
-              }
-
+              setInventory(loadedInventory || []);
+              const loadedItems = items.length !== 0 ? items : (await api.items.itemsGet({}) ?? []);
+              loadedInventory?.forEach((inv) => {
+                if (inv.equippedSlot) {
+                  const it = loadedItems?.find((i) => i.id == inv.itemId);
+                  if (it == null) return;
+                  if (inv.equippedSlot === "head") setHeadSlot(it);
+                  else if (inv.equippedSlot === "chest") setChestSlot(it);
+                  else if (inv.equippedSlot === "hands") setHandsSlot(it);
+                  else if (inv.equippedSlot === "legs") setLegsSlot(it);
+                  else if (inv.equippedSlot === "feet") setFeetSlot(it);
+                  else if (inv.equippedSlot === "main_hand") setMainhandSlot(it);
+                  else if (inv.equippedSlot === "offhand") setOffhandSlot(it);
+                }
+              });
+              calculateCharacterRange(loadedInventory ?? [], loadedCharacter);
+              const loadedCharacterSkills = await api.characterSkills.characterSkillsGet({
+                characterId: `eq.${loadedCharacter.id}`,
+                limit: "100",
+              });
+              setCharacterSkills(loadedCharacterSkills || []);
+              const loadedAbilities = abilitiesList.length > 0 ? abilitiesList : (await api.abilities.abilitiesGet({}) ?? []);
+              const loadedReqItems = abilitiesRequiredItems.length > 0 ? abilitiesRequiredItems : (await api.abilitiesRequiredItems.abilitiesRequiredItemsGet({}) ?? []);
+              const loadedReqLevels = abilitiesRequiredLevels.length > 0 ? abilitiesRequiredLevels : (await api.abilitiesRequiredLevels.abilitiesRequiredLevelsGet({}) ?? []);
+              calculateAbilities(
+                loadedCharacterSkills || [],
+                loadedInventory || [],
+                loadedAbilities,
+                loadedReqLevels,
+                loadedReqItems,
+                loadedItems || []
+              );
+            }
           } catch (err) {
-            console.error('Failed to fetch characters:', err);
+            console.error("Failed to fetch characters:", err);
           }
         };
         fetchCharacter();
@@ -1272,16 +1108,16 @@ export default function App() {
       })();
     }, []);
 
-    const canSeeCharacter = (enemy: Enemy, character: Character) => {
-      if (!character?.latitude || !character?.longitude) return false;
+    const canSeeCharacter = (enemy: Enemy, char: Characters) => {
+      if (!char?.latitude || !char?.longitude) return false;
       const dist = getDistanceMeters(
         { lat: enemy.latitude, lon: enemy.longitude },
-        { lat: character.latitude, lon: character.longitude }
+        { lat: char.latitude, lon: char.longitude }
       );
       return dist <= (enemy.wisdom + enemy.intelligence);
     };
 
-    function moveToward(enemy: Enemy, target: Character, stepSizeMeters: number): Enemy {
+    function moveToward(enemy: Enemy, target: Characters, stepSizeMeters: number): Enemy {
       const dLat = target.latitude - enemy.latitude;
       const dLng = target.longitude - enemy.longitude;
 
@@ -1348,10 +1184,10 @@ export default function App() {
           if (!loc) return e;
 
           // Perception/attack/movement logic…
-          if (canSeeCharacter(e, character)) {
+          if (canSeeCharacter(e, character!)) {
             const distance = getDistanceMeters(
               { lat: e.latitude, lon: e.longitude },
-              { lat: character.latitude, lon: character.longitude }
+              { lat: character!.latitude, lon: character!.longitude }
             );
             const now = Date.now();
             if (distance <= e.speed) {
@@ -1362,7 +1198,7 @@ export default function App() {
               }
               return e;
             }
-            return moveToward(e, character, 1);
+            return moveToward(e, character!, 1);
           }
 
           // Path interpolation fallback
@@ -1395,422 +1231,69 @@ export default function App() {
       };
     }, [items]);
 
-    if (!character) {
-        return (
-            <View style={[styles.characterCreationContainer, { height: '70%', padding: 20 }]}>
-                <ScrollView>
-                  <Text style={styles.title}>Character Details</Text>
-
-                  {/* Character Name */}
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter character name"
-                    value={name}
-                    onChangeText={setName}
-                    placeholderTextColor="#aaa"
-                  />
-
-                 {/* Choices (Ancestry, Background, Class) */}
-                <View style={styles.card}>
-                  <Text style={styles.sectionTitle}>Character Ancestry</Text>
-                  <View>
-                      {ancestry && (
-                          <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setAncestryCollapsed(!isAncestryCollapsed)}>
-                              <Text style={styles.selectedItemTitle}>{ancestry.name}</Text>
-                              <Image source={{ uri: config.imageHost + ancestry.image }} style={styles.selectedItemImage} />
-                              <Text style={styles.selectedItemDescription}>{ancestry.description}</Text>
-
-                              { !isAncestryCollapsed && (
-                                <View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>Size</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.baseSize}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.row}>
-                                    <View style={styles.statBlock}>
-                                      <Text style={styles.statLabel}>Speed</Text>
-                                      <Text style={styles.statValue}>
-                                        {ancestry.bonusSpeed}m
-                                      </Text>
-                                    </View>
-                                     <View style={styles.statBlock}>
-                                      <Text style={styles.statLabel}>HP</Text>
-                                      <Text style={styles.statValue}>
-                                        {ancestry.bonusHealth}
-                                      </Text>
-                                      </View>
-                                     <View style={styles.statBlock}>
-                                      <Text style={styles.statLabel}>MANA</Text>
-                                      <Text style={styles.statValue}>
-                                        {ancestry.bonusMana}
-                                      </Text>
-                                    </View>
-                                   </View>
-                                 <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>STR</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusStrength}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>DEX</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusDexterity}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CON</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusConstitution}
-                                    </Text>
-                                   </View>
-                                  </View>
-                                <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>INT</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusIntelligence}
-                                    </Text>
-                                  </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>WIS</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusWisdom}
-                                    </Text>
-                                </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CHA</Text>
-                                    <Text style={styles.statValue}>
-                                      {ancestry.bonusCharisma}
-                                    </Text>
-                                 </View>
-                             </View>
-                            </View>
-                           )}
-                          </TouchableOpacity>
-                      )}
-                      <FlatList
-                          data={ancestries}
-                          keyExtractor={(item) => item.id.toString()}
-                          horizontal
-                          showsHorizontalScrollIndicator={false}
-                          contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
-                          renderItem={({ item }) => (
-                              <TouchableOpacity style={styles.statBlock} onPress={() => {setAncestry(item); setAncestryCollapsed(false);}}>
-                                  <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
-                              </TouchableOpacity>
-                          )}
-                      />
-                    </View>
-                </View>
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>Character Background</Text>
-                    <View>
-                        {background && (
-                            <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setBackgroundCollapsed(!isBackgroundCollapsed)}>
-                                <Text style={styles.selectedItemTitle}>{background.name}</Text>
-                                <Image source={{ uri: config.imageHost + background.image }} style={styles.selectedItemImage} />
-                                <Text style={styles.selectedItemDescription}>{background.description}</Text>
-
-                                { !isBackgroundCollapsed && (
-                                  <View>
-                                    <View style={styles.row}>
-                                     <View style={styles.statBlock}>
-                                        <Text style={styles.statLabel}>Speed</Text>
-                                        <Text style={styles.statValue}>
-                                          {background.bonusSpeed}m
-                                        </Text>
-                                      </View>
-                                      <View style={styles.statBlock}>
-                                        <Text style={styles.statLabel}>HP</Text>
-                                        <Text style={styles.statValue}>
-                                          {background.bonusHealth}
-                                        </Text>
-                                      </View>
-                                     <View style={styles.statBlock}>
-                                      <Text style={styles.statLabel}>MANA</Text>
-                                      <Text style={styles.statValue}>
-                                        {background.bonusMana}
-                                      </Text>
-                                    </View>
-                                   </View>
-                                 <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>STR</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusStrength}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>DEX</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusDexterity}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CON</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusConstitution}
-                                    </Text>
-                                   </View>
-                                  </View>
-                                <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>INT</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusIntelligence}
-                                    </Text>
-                                  </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>WIS</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusWisdom}
-                                    </Text>
-                                </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CHA</Text>
-                                    <Text style={styles.statValue}>
-                                      {background.bonusCharisma}
-                                    </Text>
-                                 </View>
-                                </View>
-                            </View>
-                            )}
-                            </TouchableOpacity>
-                        )}
-                        <FlatList
-                            data={backgrounds}
-                            keyExtractor={(item) => item.id.toString()}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.statBlock} onPress={() => {setBackground(item); setBackgroundCollapsed(false);}}>
-                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
-                </View>
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>Character Class</Text>
-                    <View>
-                        {characterClass && (
-                            <TouchableOpacity style={styles.selectedItemContainer} onPress={() => setCharacterClassCollapsed(!isCharacterClassCollapsed)}>
-                                <Text style={styles.selectedItemTitle}>{characterClass.name}</Text>
-                                <Image source={{ uri: config.imageHost + characterClass.image }} style={styles.selectedItemImage} />
-                                <Text style={styles.selectedItemDescription}>{characterClass.description}</Text>
-
-                                { !isCharacterClassCollapsed && (
-                                  <View>
-                                    <View style={styles.row}>
-                                         <View style={styles.statBlock}>
-                                          <Text style={styles.statLabel}>Speed</Text>
-                                          <Text style={styles.statValue}>
-                                            {characterClass.bonusSpeed}m
-                                          </Text>
-                                        </View>
-                                      <View style={styles.statBlock}>
-                                        <Text style={styles.statLabel}>HP</Text>
-                                        <Text style={styles.statValue}>
-                                          {characterClass.bonusHealth}
-                                        </Text>
-                                      </View>
-                                     <View style={styles.statBlock}>
-                                      <Text style={styles.statLabel}>MANA</Text>
-                                      <Text style={styles.statValue}>
-                                        {characterClass.bonusMana}
-                                      </Text>
-                                    </View>
-                                   </View>
-                                 <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>STR</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusStrength}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>DEX</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusDexterity}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CON</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusConstitution}
-                                    </Text>
-                                   </View>
-                                  </View>
-                                <View style={styles.row}>
-                                  <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>INT</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusIntelligence}
-                                    </Text>
-                                  </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>WIS</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusWisdom}
-                                    </Text>
-                                </View>
-                                <View style={styles.statBlock}>
-                                    <Text style={styles.statLabel}>CHA</Text>
-                                    <Text style={styles.statValue}>
-                                      {characterClass.bonusCharisma}
-                                    </Text>
-                                 </View>
-                                </View>
-                            </View>
-                            )}
-                            </TouchableOpacity>
-                        )}
-                        <FlatList
-                            data={characterClasses}
-                            keyExtractor={(item) => item.id.toString()}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.statBlock} onPress={() => {setCharacterClass(item); setCharacterClassCollapsed(false);}}>
-                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
-                </View>
-
-
-
-                  {/* Attributes */}
-                <View style={styles.card}>
-                  <Text style={styles.sectionTitle}>Calculated Stats</Text>
-                   <View style={styles.statBlock}><Text style={styles.statLabel}>Size</Text><Text style={styles.statValue}>{ancestry?.baseSize ?? "N/A"}</Text></View>
-                  <View style={styles.row}>
-                      <View style={styles.statBlock}><Text style={styles.statLabel}>Speed</Text><Text style={styles.statValue}>{calculateSpeed()}m</Text></View>
-                      <View style={styles.statBlock}><Text style={styles.statLabel}>HP</Text><Text style={styles.statValue}>{calculateHP()}</Text></View>
-                      <View style={styles.statBlock}><Text style={styles.statLabel}>Mana</Text><Text style={styles.statValue}>{calculateMana()}</Text></View>
-                  </View>
-                  <View style={styles.row}>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>STR</Text><Text style={styles.statValue}>{calculateAttributes().STR}</Text></View>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>DEX</Text><Text style={styles.statValue}>{calculateAttributes().DEX}</Text></View>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>CON</Text><Text style={styles.statValue}>{calculateAttributes().CON}</Text></View>
-                   </View>
-                   <View style={styles.row}>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>INT</Text><Text style={styles.statValue}>{calculateAttributes().INT}</Text></View>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>WIS</Text><Text style={styles.statValue}>{calculateAttributes().WIS}</Text></View>
-                    <View style={styles.statBlock}><Text style={styles.statLabel}>CHA</Text><Text style={styles.statValue}>{calculateAttributes().CHA}</Text></View>
-                   </View>
-                  </View>
-
-                    {/* Abilities */}
-                    <View style={styles.card}>
-                      <Text style={styles.sectionTitle}>Starting Abilities</Text>
-                      <View>
-                        {selectedAbility && (
-                            <View style={styles.selectedItemContainer}>
-                                <Text style={styles.selectedItemTitle}>{selectedAbility.name}</Text>
-                                <Image source={{ uri: config.imageHost + selectedAbility.image}} style={styles.selectedItemImage} />
-                                <Text style={styles.selectedItemDescription}>{selectedAbility.description}</Text>
-                                <Text style={styles.selectedItemQuantity}>Range: {selectedAbility.range}m</Text>
-                                <Text style={styles.selectedItemQuantity}>Damage:{selectedAbility.damage}</Text>
-                                <Text style={styles.selectedItemQuantity}>Hits: {selectedAbility.hits ?? 1}</Text>
-                            </View>
-                        )}
-                        <FlatList
-                            data={abilitiesList.filter((a) => {
-                              if (!a.active) return false;
-                              const requiredLevel = abilitiesRequiredLevels.find((arl) => arl.abilityId === a.id);
-                              if (requiredLevel?.requiredLevel !== 1) {
-                                return false;
-                              }
-
-                              const requiredItem = abilitiesRequiredItems.find((ai) => ai.abilityId === a.id);
-                              if (requiredItem) {
-                                return false;
-                              }
-                              return true;
-                            })}
-                            keyExtractor={(item) => item.id.toString()}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.statBlock} onPress={() => setSelectedAbility(item)}>
-                                    <Image source={{ uri: config.imageHost + item.image }} style={styles.slotIcon} />
-                                </TouchableOpacity>
-                                )}
-                        />
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.card, { backgroundColor: "#4CAF50" }]}
-                      onPress={async () => {   // <-- make it async
-                        const id = Math.floor(Math.random() * 1000000); // Temporary ID, replace with actual ID from API
-                        const newCharacter: Characters = {
-                          id: id, // Temporary ID, replace with actual ID from API
-                          name: name,
-                          ancestry: ancestry?.id ?? 0,
-                          background: background?.id ?? 0,
-                          classId: characterClass?.id ?? 0,
-                          speed: calculateSpeed(),
-                          size: ancestry?.baseSize ?? "medium", // safety
-                          dexterity: calculateAttributes().DEX,
-                          strength: calculateAttributes().STR,
-                          intelligence: calculateAttributes().INT,
-                          charisma: calculateAttributes().CHA,
-                          wisdom: calculateAttributes().WIS,
-                          constitution: calculateAttributes().CON,
-                          level: 1,
-                          gold: 0,
-                          experience: 0,
-                          health: calculateHP(),
-                          maxHealth: calculateHP(),
-                          mana: calculateMana(),
-                          maxMana: calculateMana(),
-                          longitude: location?.coords.longitude ?? 0,
-                          latitude: location?.coords.latitude ?? 0,
-                        };
-
-                        // Post character to API
-                        await api.characters.charactersPost({
-                          characters: newCharacter,
-                        });
-
-                        setCharacter(newCharacter);
-                        saveCharacterId(id);
-
-                        // Create initial skills
-                        const characterSkills = skills.map((skill) => ({
-                            characterId: id,
-                            skillId: skill.id,
-                            level: 1,
-                            experience: 0,
-                        }));
-
-                        await characterSkills.forEach(skill => {
-                            api.characterSkills.characterSkillsPost({
-                              characterSkills: skill,
-                            });
-                        });
-
-                        setCharacterSkills(characterSkills);
-                        setCharacterRange(calculateSpeed());
-                        calculateAbilities(characterSkills, inventory);
-                      }}
-                    >
-                        <Text style={{ color: "#fff", textAlign: "center", fontSize: 18 }}>Create Character</Text>
-                    </TouchableOpacity>
-                </ScrollView>
-            </View>
-        )
+    async function handleCreateCharacter(data: CharacterCreationData) {
+      const { name: charName, ancestry: anc, background: bg, characterClass: cls } = data;
+      if (!location) return;
+      const id = Math.floor(Math.random() * 1000000);
+      const speed = calcSpeed(anc, bg, cls);
+      const attrs = calcAttrs(anc, bg, cls);
+      const hp = calcHP(anc, bg, cls);
+      const mana = calcMana(anc, bg, cls);
+      const newCharacter: Characters = {
+        id,
+        name: charName,
+        ancestry: anc?.id ?? 0,
+        background: bg?.id ?? 0,
+        classId: cls?.id ?? 0,
+        speed,
+        size: anc?.baseSize ?? "medium",
+        dexterity: attrs.DEX,
+        strength: attrs.STR,
+        intelligence: attrs.INT,
+        charisma: attrs.CHA,
+        wisdom: attrs.WIS,
+        constitution: attrs.CON,
+        level: 1,
+        gold: 0,
+        experience: 0,
+        health: hp,
+        maxHealth: hp,
+        mana,
+        maxMana: mana,
+        longitude: location.coords.longitude ?? 0,
+        latitude: location.coords.latitude ?? 0,
+      };
+      await api.characters.charactersPost({ characters: newCharacter });
+      setCharacter(newCharacter);
+      await saveCharacterId(id);
+      const newCharacterSkills = skills.map((skill) => ({
+        characterId: id,
+        skillId: skill.id,
+        level: 1,
+        experience: 0,
+      }));
+      for (const skill of newCharacterSkills) {
+        await api.characterSkills.characterSkillsPost({ characterSkills: skill });
+      }
+      setCharacterSkills(newCharacterSkills);
+      setCharacterRange(speed);
+      calculateAbilities(newCharacterSkills, []);
     }
 
+    if (!character) {
+      return (
+        <CharacterCreationScreen
+          ancestries={ancestries}
+          backgrounds={backgrounds}
+          characterClasses={characterClasses}
+          skills={skills}
+          abilitiesList={abilitiesList}
+          abilitiesRequiredLevels={abilitiesRequiredLevels}
+          abilitiesRequiredItems={abilitiesRequiredItems}
+          onCreateCharacter={handleCreateCharacter}
+        />
+      );
+    }
 
     if (!location) {
       return (
@@ -2327,7 +1810,7 @@ export default function App() {
           </View>
         </Modal>
 
-      <View style={styles.weaponsHudContainerudContainer}>
+      <View style={styles.weaponsHudContainer}>
 
         {/* Equipment/Skill Slots */}
         <View style={styles.slotsContainer}>
@@ -2375,305 +1858,3 @@ export default function App() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  map: { flex: 1 },
-  statusHudContainer: {
-      position: "absolute",
-      top: 30,
-      width: '30%',
-      height: '10%',
-      backgroundColor: "rgba(0, 0, 0, 0)",
-      padding: 10,
-    },
-    selectedItemContainer: {
-        backgroundColor: "#3a3835",
-        borderWidth: 2,
-        borderColor: "#6b4c35", // bronze/gold border
-        borderRadius: 12,
-        padding: 12,
-        marginBottom: 16,
-        alignItems: 'center',
-        },
-    selectedItemTitle: {
-        fontSize: 20,
-        fontFamily: "Cinzel-Bold",
-        color: "#e6d3b3",
-        marginBottom: 8,
-      },
-    selectedItemImage: {
-        width: 100,
-        height: 100,
-        marginBottom: 8,
-      },
-    selectedItemDescription: {
-        fontSize: 16,
-        color: "#d7c4a3",
-        marginBottom: 8,
-        textAlign: 'center',
-      },
-    selectedItemQuantity: {
-        fontSize: 14,
-        color: "#aaa",
-        marginBottom: 8,
-      },
-    useButton: {
-        backgroundColor: "#4CAF50",
-        padding: 10,
-        borderRadius: 8,
-      },
-    useButtonText: {
-        color: "#fff",
-        fontSize: 16,
-        textAlign: "center",
-      },
-detailsHudContainer: {
-  position: "absolute",
-  top: 20,
-  right: 20,
-  width: "40%",
-  backgroundColor: "rgba(20, 20, 20, 0.85)", // deep dark overlay
-  borderRadius: 12,
-  borderWidth: 2,
-  borderColor: "rgba(180, 160, 100, 0.8)", // antique gold/bronze
-  padding: 16,
-  shadowColor: "#000",
-  shadowOpacity: 0.7,
-  shadowOffset: { width: 4, height: 4 },
-  shadowRadius: 6,
-},
-detailsHudTextName: {
-  fontSize: 20,
-  fontWeight: "700",
-  color: "#e0d6b4", // parchment gold
-  marginBottom: 8,
-},
-detailsHudTextTitle: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#d4c48f",
-},
-detailsHudTextStat: {
-  fontSize: 13,
-  color: "#c9c9c9", // muted silver
-  marginVertical: 1,
-},
-detailsHudDivider: {
-  height: 1,
-  backgroundColor: "rgba(255,255,255,0.1)",
-  marginVertical: 6,
-},
-  weaponsHudContainerudContainer: {
-      position: "absolute",
-      bottom: 0,
-      width: "100%",
-      height: '24%',
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-      padding: 9,
-    },
-    statsContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 10,
-    },
-    statText: {
-      color: "#fff",
-      fontSize: 16,
-    },
-      barContainer: {
-        marginBottom: 10,
-      },
-      barLabel: {
-        color: "#fff",
-        fontSize: 14,
-        marginBottom: 5,
-      },
-      barBackground: {
-        width: "80%",
-        height: 10,
-        backgroundColor: "#777",
-        borderRadius: 10,
-        overflow: "hidden",
-      },
-      barFill: {
-        height: "100%",
-        borderRadius: 10,
-      },
-    slotsContainer: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-    },
-    equipmentContainer: {
-      position: "absolute",
-      right: 10,
-      bottom: '26%',
-      flexDirection: "column",
-      justifyContent: "space-around",
-      gap: 10,
-    },
-    slotIcon: {
-      width: 50,
-      height: 50,
-    },
-    modalContainer: {
-      flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
-      padding: 20,
-      justifyContent: "center",
-    },
-    row: {
-      flexDirection: "row",
-      justifyContent: "center",
-    },
-    gridContainer: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        gap: 10,
-        padding: 10,
-    },
-     section: { marginBottom: 20 },
-      label: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-      input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10, fontSize: 16 },
-      picker: { borderWidth: 1, borderColor: "#ccc", borderRadius: 5, padding: 10 },
-      abilityRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-      abilityLabel: { fontSize: 16, flex: 1 },
-      characterCreationContainer: {
-       flex: 1,
-       backgroundColor: "#2b2a28", // parchment-dark gray
-     },
-     title: {
-       fontSize: 28,
-       fontFamily: "Cinzel-Bold", // medieval serif font
-       color: "#f0e6d2",
-       textAlign: "center",
-       marginBottom: 20,
-     },
-     card: {
-       backgroundColor: "#3a3835",
-       borderWidth: 2,
-       borderColor: "#6b4c35", // bronze/gold border
-       borderRadius: 12,
-       padding: 12,
-       marginBottom: 16,
-     },
-     closeButton: {
-         alignSelf: "flex-end",
-         backgroundColor: "#6b4c35",
-         padding: 10,
-         borderRadius: 8,
-         marginBottom: 10,
-      },
-     sectionTitle: {
-       fontSize: 20,
-       fontFamily: "Cinzel-Bold",
-       color: "#e6d3b3",
-       marginBottom: 8,
-     },
-     row: {
-       flexDirection: "row",
-       flexWrap: "wrap",
-       justifyContent: "space-between",
-     },
-     statBlock: {
-       alignItems: "center",
-       margin: 6,
-       padding: 8,
-       borderWidth: 1,
-       borderColor: "#7a5e3a",
-       borderRadius: 8,
-       backgroundColor: "#2e2c29",
-       minWidth: 60,
-     },
-     statLabel: {
-       fontSize: 16,
-       fontFamily: "Cinzel-Regular",
-       color: "#d7c4a3",
-     },
-     statValue: {
-       fontSize: 18,
-       fontFamily: "Cinzel-Bold",
-       color: "#fff",
-     },
-     skillTag: {
-       paddingVertical: 6,
-       paddingHorizontal: 12,
-       margin: 4,
-       backgroundColor: "#554531",
-       borderRadius: 16,
-       borderWidth: 1,
-       borderColor: "#8a6e48",
-     },
-     skillText: {
-       fontFamily: "Cinzel-Regular",
-       fontSize: 16,
-       color: "#f2e0c2",
-     },
-     dropdown: {
-       flex: 1,
-       marginHorizontal: 6,
-     },
-     dropdownLabel: {
-       fontSize: 16,
-       fontFamily: "Cinzel-Bold",
-       color: "#d7c4a3",
-     },
-     dropdownValue: {
-       fontSize: 16,
-       fontFamily: "Cinzel-Regular",
-       color: "#fff",
-     },
-     dropdownItem: {
-       padding: 6,
-       borderBottomWidth: 1,
-       borderBottomColor: "#6b4c35",
-     },
-     dropdownText: {
-       fontFamily: "Cinzel-Regular",
-       fontSize: 16,
-       color: "#f2e0c2",
-     },
-  itemComparisonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  itemBlock: {
-    flex: 1,
-    backgroundColor: "rgba(40, 40, 40, 0.9)",
-    margin: 4,
-    padding: 8,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  blockTitle: {
-    fontWeight: "bold",
-    fontSize: 14,
-    color: "gold",
-    marginBottom: 4,
-  },
-  itemImage: {
-    width: 64,
-    height: 64,
-    marginBottom: 4,
-  },
-  itemName: {
-    fontWeight: "bold",
-    color: "white",
-    marginBottom: 4,
-  },
-  equipButton: {
-  backgroundColor: "#6b4c35",
-  paddingVertical: 8,
-  paddingHorizontal: 16,
-  borderRadius: 6,
-  marginTop: 10,
-},
-equipButtonText: {
-  color: "#fff",
-  fontWeight: "bold",
-  textAlign: "center",
-},
-
-
-});
