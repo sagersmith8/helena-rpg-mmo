@@ -25,7 +25,7 @@ namespace Helerion.Game
         [SerializeField] private int _savedCharacterId; // persist via PlayerPrefs or your backend
 
         private ApiClient _api;
-        private LocationService _locationService;
+        private GpsLocationService _locationService;
         private bool _originSet;
 
         public CharacterData PlayerCharacter { get; private set; }
@@ -42,7 +42,7 @@ namespace Helerion.Game
             DontDestroyOnLoad(gameObject);
 
             if (gameConfig != null) Helerion.Config.GameConfig.Instance = gameConfig;
-            _locationService = new LocationService();
+            _locationService = new GpsLocationService();
             _api = new ApiClient();
             _savedCharacterId = PlayerPrefs.GetInt("helerion_character_id", 0);
         }
@@ -128,7 +128,7 @@ namespace Helerion.Game
             SaveCharacterId(c.id);
         }
 
-        public LocationService LocationService => _locationService;
+        public GpsLocationService LocationService => _locationService;
 
         public void UpdatePlayerPosition(double lat, double lng)
         {
