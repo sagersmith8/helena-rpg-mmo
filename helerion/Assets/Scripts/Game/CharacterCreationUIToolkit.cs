@@ -41,6 +41,12 @@ namespace Helerion.Game
             var doc = uiDocument != null ? uiDocument : GetComponent<UIDocument>();
             if (doc == null || doc.rootVisualElement == null) return;
 
+            // Make UI fill the screen on mobile (e.g. Galaxy S21): use current screen as reference so it's not tiny
+            if (doc.panelSettings != null && Screen.width > 0 && Screen.height > 0)
+            {
+                doc.panelSettings.referenceResolution = new Vector2Int(Screen.width, Screen.height);
+            }
+
             _root = doc.rootVisualElement.Q<VisualElement>("root");
             if (_root == null) _root = doc.rootVisualElement;
 
