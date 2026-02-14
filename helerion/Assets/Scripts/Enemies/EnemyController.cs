@@ -55,7 +55,7 @@ namespace Helerion.Enemies
         {
             if (health != null && health.current <= 0) return;
 
-            var origin = WorldOrigin.Instance ?? FindFirstObjectByType<WorldOrigin>();
+            var origin = WorldOrigin.Instance ?? FindObjectOfType<WorldOrigin>();
             if (origin == null) return;
 
             Vector3 myPos = transform.position;

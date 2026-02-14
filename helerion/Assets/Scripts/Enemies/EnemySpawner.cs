@@ -60,14 +60,24 @@ namespace Helerion.Enemies
             bool done = false;
             List<(float lng, float lat)> route = null;
             _osrm.GetRoute(waypoints, r => { route = r; done = true; }, _ => { done = true; });
-            while (!done) yield return null;
+            float timeout = 8f;
+            while (!done && timeout > 0f) { timeout -= Time.deltaTime; yield return null; }
 
-            if (route == null || route.Count == 0) yield break;
+            Vector3 spawnPos;
+            if (route != null && route.Count > 0)
+            {
+                spawnPos = origin.LatLngToWorld(route[0].lat, route[0].lng);
+            }
+            else
+            {
+                // Fallback: spawn at first waypoint if OSRM failed (e.g. no network)
+                spawnPos = origin.LatLngToWorld(waypoints[0].lat, waypoints[0].lng);
+            }
 
-            Vector3 spawnPos = origin.LatLngToWorld(route[0].lat, route[0].lng);
             var go = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
             var controller = go.GetComponent<EnemyController>();
-            if (controller != null) controller.SetPath(route);
+            if (controller != null && route != null && route.Count > 0)
+                controller.SetPath(route);
 
             var health = go.GetComponent<Combat.Health>();
             if (health != null) { health.current = 10; health.max = 10; }

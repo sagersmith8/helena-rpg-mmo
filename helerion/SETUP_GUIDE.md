@@ -62,6 +62,22 @@ We’ll use a **Capsule** first so you can test without Mixamo. You can replace 
 3. **Tag**: at the top of the Inspector, find **Tag** (it may say “Untagged”). Click it and choose **Player**. (If “Player” doesn’t exist, leave Untagged for now; the spawner will still work, but the enemy won’t chase this object.)
 4. **Assign WorldOrigin to GameManager**: Select **GameManager** in the Hierarchy. In the Inspector, find **World Origin**. Drag the **WorldOrigin** object from the Hierarchy into that slot.
 
+### 2.5a Camera follow (see your character move)
+
+So the camera follows the player and you can see them walk on the map:
+
+1. Select **Main Camera** in the Hierarchy.
+2. **Add Component** → **Helerion** → **Camera Follow**.
+3. Leave **Target** empty (it will find the Player by tag). Set **Offset** to **(0, 40, 0)** for top-down, or **(0, 20, -15)** for a slight angle. Check **Look At Target**.
+
+### 2.5b Ground and map with roads
+
+Add a ground plane and optional OpenStreetMap layer so you have a world to walk on and see roads:
+
+1. Hierarchy → **right‑click** → **Create Empty**. Rename to **MapGround**.
+2. **Add Component** → **Helerion** → **Map Ground**.
+3. Assign **World Origin**. Set **Ground Size** (e.g. **500**). Check **Show Map Tiles** to load OSM tiles (streets). **Tile Zoom** **17** and **Tiles Per Side** **5** give a 5×5 grid of street tiles. Tiles load after **Tile Load Delay** (default 2 s) so GPS origin is set first.
+
 ### 2.6 Enemy prefab
 
 1. Hierarchy → **right‑click** → **3D Object → Capsule**. Rename to **Enemy**.

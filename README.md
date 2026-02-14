@@ -42,3 +42,22 @@ npm run gen-types
 ```
 
 For csv-uploader: `cd csv-uploader && npm run gen-types`.
+
+## Seed database from CSV (when empty)
+
+The `csv/` folder holds preloaded data (skills, abilities, items, ancestries, backgrounds, classes). To load them into the database **only when each table is empty**:
+
+```bash
+API_URL=http://localhost:3000 npm run seed
+```
+
+Or with the default `http://localhost:3000`:
+
+```bash
+npm run seed
+```
+
+- Reads each CSV under `csv/` and POSTs rows to the matching PostgREST table.
+- Skips a table if it already has at least one row.
+- Column renames: `ancestries.csv` (`bonus_charima` → `bonus_charisma`, `bonus_wisom` → `bonus_wisdom`), `items.csv` (`bonus_damage_chance` → `bonus_damage_change`). Extra columns (e.g. `notes`, `updated`) are dropped.
+- Requires Node 18+ (for `fetch`). No extra dependencies.

@@ -39,6 +39,8 @@ namespace Helerion.Game
         public List<SkillData> Skills { get; private set; } = new List<SkillData>();
         public bool HasCharacter => PlayerCharacter != null;
         public bool IsReady { get; private set; }
+        /// <summary>Set when ref data fetch fails (e.g. can't connect). Show in character creation UI.</summary>
+        public string RefDataLoadError { get; private set; }
 
         private void Awake()
         {
@@ -99,13 +101,35 @@ namespace Helerion.Game
 
             // If no character: character creation UI will be shown; do not create a demo character.
 
-            _api.GetItems(list => { if (list != null) Items.AddRange(list); }, _ => { });
-            _api.GetAbilities(list => { if (list != null) Abilities.AddRange(list); }, _ => { });
-            _api.GetAncestries(list => { if (list != null) Ancestries.AddRange(list); }, _ => { });
-            _api.GetBackgrounds(list => { if (list != null) Backgrounds.AddRange(list); }, _ => { });
-            _api.GetClasses(list => { if (list != null) Classes.AddRange(list); }, _ => { });
-            _api.GetSkills(list => { if (list != null) Skills.AddRange(list); }, _ => { });
-            IsReady = true;
+            RefDataLoadError = null;
+            int pending = 6;
+            Action onDone = () => { pending--; if (pending <= 0) IsReady = true; };
+            Action<string> onErr = (err) =>
+            {
+                if (string.IsNullOrEmpty(RefDataLoadError))
+                    RefDataLoadError = "Can't reach server. Check Wi‑Fi and API URL (e.g. http://192.168.x.x:3000). " + (err ?? "");
+                onDone();
+            };
+
+            _api.GetItems(list => { if (list != null) Items.AddRange(list); onDone(); }, onErr);
+            _api.GetAbilities(list => { if (list != null) Abilities.AddRange(list); onDone(); }, onErr);
+            _api.GetAncestries(list => { if (list != null) Ancestries.AddRange(list); onDone(); }, onErr);
+            _api.GetBackgrounds(list => { if (list != null) Backgrounds.AddRange(list); onDone(); }, onErr);
+            _api.GetClasses(list => { if (list != null) Classes.AddRange(list); onDone(); }, onErr);
+            _api.GetSkills(list => { if (list != null) Skills.AddRange(list); onDone(); }, onErr);
+
+            // If requests hang (e.g. phone can't reach server), show error after timeout
+            float timeout = 12f;
+            while (timeout > 0 && !IsReady)
+            {
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+            if (!IsReady)
+            {
+                RefDataLoadError = "Connection timed out. Check Wi‑Fi and that the server is running at your API URL (e.g. http://192.168.x.x:3000).";
+                IsReady = true;
+            }
         }
 
         private void LoadInventoryAndRefs(Action onDone)

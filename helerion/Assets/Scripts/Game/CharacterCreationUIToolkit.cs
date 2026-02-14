@@ -81,8 +81,17 @@ namespace Helerion.Game
 
             _root.style.display = GameManager.Instance.HasCharacter ? DisplayStyle.None : DisplayStyle.Flex;
 
-            if (_root.style.display == DisplayStyle.Flex && _ancestries.Count == 0 && GameManager.Instance.IsReady)
-                PopulateDropdowns();
+            if (_root.style.display == DisplayStyle.Flex)
+            {
+                if (!string.IsNullOrEmpty(GameManager.Instance.RefDataLoadError))
+                    SetStatus(GameManager.Instance.RefDataLoadError);
+                else if (GameManager.Instance.IsReady && _ancestries.Count == 0)
+                {
+                    PopulateDropdowns();
+                    if (_ancestries.Count == 0)
+                        SetStatus("No data from server. Run: npm run seed (API_URL set to your backend, e.g. http://192.168.x.x:3000).");
+                }
+            }
         }
 
         private void PopulateDropdowns()
