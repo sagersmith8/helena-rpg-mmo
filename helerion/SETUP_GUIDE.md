@@ -80,9 +80,7 @@ We’ll use a **Capsule** first so you can test without Mixamo. You can replace 
 
 ### 2.8 Character creation UI (when no character is loaded)
 
-If no character is loaded from the backend, the game shows a **character creation** screen. Use **one** of the two options below.
-
-**Option A – UI Toolkit (use this if you only see “UI Document” under UI)**
+If no character is loaded from the backend, the game shows a **character creation** screen (UI Toolkit).
 
 1. In the Hierarchy, **right‑click** → **UI Toolkit** → **UI Document**. A new object appears (often named “UI Document”).
 2. Select it. In the **Inspector** you’ll see a **UI Document** component.
@@ -93,13 +91,6 @@ If no character is loaded from the backend, the game shows a **character creatio
 6. **Sort Order** (on the UI Document component): set to a positive number (e.g. **10**) so the creation panel draws above the game view.
 
 At runtime the panel is shown only when **GameManager** has no character; after the user enters a name, selects ancestry/background/class, and taps **Create Character**, the game continues with that character.
-
-**Option B – Legacy Canvas (use this if you have “Canvas” under UI)**
-
-If your menu shows **GameObject** → **UI** → **Canvas** (the older UI system):
-
-1. Hierarchy → **right‑click** → **UI** → **Canvas**. Rename it to **CharacterCreationCanvas**.
-2. Add **Character Creation UI (Script)** to the Canvas, then add a **Panel** under the Canvas and under that: **Input Field** (name), three **Dropdown**s (ancestry, background, class), **Button** (Create), and optional **Text** for status and stats. Assign all of them in the Inspector to the script’s fields. (See the script header in `CharacterCreationUI.cs` for the exact field names.)
 
 ### 2.9 Save the scene
 
