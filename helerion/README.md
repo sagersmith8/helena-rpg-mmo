@@ -6,6 +6,10 @@
 
 ---
 
+**First time in Unity?** Use **[SETUP_GUIDE.md](SETUP_GUIDE.md)** for step-by-step instructions: Game Config, scene setup, and optional Mixamo character/animations.
+
+---
+
 ## Quick start (Mac)
 
 1. **Install Unity**
