@@ -90,6 +90,8 @@ If no character is loaded from the backend, the game shows a **character creatio
    **If the script doesn’t appear:** check the **Console** for red errors (e.g. missing **UI Toolkit** package). In **Window → Package Manager**, install **UI Toolkit** if it’s not already there.
 6. **Sort Order** (on the UI Document component): set to a positive number (e.g. **10**) so the creation panel draws above the game view.
 
+**Mobile (e.g. Samsung Galaxy S21):** In your **Panel Settings** asset, set **Scale Mode** to **Scale With Screen Size** and **Reference Resolution** to something like 1080×1920 so the UI scales to fit the phone screen. The character creation layout is responsive (full-screen root, scrollable form, 90% width) so it should fit narrow portrait screens.
+
 At runtime the panel is shown only when **GameManager** has no character; after the user enters a name, selects ancestry/background/class, and taps **Create Character**, the game continues with that character.
 
 ### 2.9 Save the scene
