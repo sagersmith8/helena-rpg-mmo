@@ -70,6 +70,84 @@ namespace Helerion.API
             GetMany("abilities", "", onSuccess, onError);
         }
 
+        public void GetAncestries(Action<AncestryData[]> onSuccess, Action<string> onError)
+        {
+            GetMany("ancestries", "", onSuccess, onError);
+        }
+
+        public void GetBackgrounds(Action<BackgroundData[]> onSuccess, Action<string> onError)
+        {
+            GetMany("backgrounds", "", onSuccess, onError);
+        }
+
+        public void GetClasses(Action<ClassData[]> onSuccess, Action<string> onError)
+        {
+            GetMany("classes", "", onSuccess, onError);
+        }
+
+        public void GetSkills(Action<SkillData[]> onSuccess, Action<string> onError)
+        {
+            GetMany("skills", "", onSuccess, onError);
+        }
+
+        /// <summary>POST character (snake_case body for PostgREST). Returns created character.</summary>
+        public void PostCharacterFromDto(CharacterPostDto dto, Action<CharacterData> onSuccess, Action<string> onError)
+        {
+            var json = JsonUtility.ToJson(dto);
+            var req = new UnityWebRequest($"{_baseUrl}/characters", "POST");
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.SetRequestHeader("Prefer", "return=representation");
+            Send(req, (CharacterResponseDto[] arr) =>
+            {
+                if (arr != null && arr.Length > 0)
+                    onSuccess?.Invoke(ToCharacterData(arr[0]));
+                else
+                    onError?.Invoke("No character returned");
+            }, onError);
+        }
+
+        public void PostCharacterSkill(CharacterSkillPost entry, Action onSuccess, Action<string> onError)
+        {
+            var json = JsonUtility.ToJson(entry);
+            var req = new UnityWebRequest($"{_baseUrl}/character_skills", "POST");
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            Send<object>(req, _ => onSuccess?.Invoke(), onError);
+        }
+
+        private static CharacterData ToCharacterData(CharacterResponseDto dto)
+        {
+            return new CharacterData
+            {
+                id = dto.id,
+                name = dto.name,
+                ancestry = dto.ancestry,
+                background = dto.background,
+                classId = dto.class_id,
+                level = dto.level,
+                gold = dto.gold,
+                speed = dto.speed,
+                size = dto.size ?? "medium",
+                experience = dto.experience,
+                health = dto.health,
+                maxHealth = dto.max_health,
+                mana = dto.mana,
+                maxMana = dto.max_mana,
+                latitude = dto.latitude,
+                longitude = dto.longitude,
+                armorClass = dto.armor_class,
+                strength = dto.strength,
+                dexterity = dto.dexterity,
+                intelligence = dto.intelligence,
+                charisma = dto.charisma,
+                wisdom = dto.wisdom,
+                constitution = dto.constitution
+            };
+        }
+
         private void GetMany<T>(string table, string filter, Action<T[]> onSuccess, Action<string> onError)
         {
             var url = $"{_baseUrl}/{table}?limit=100";

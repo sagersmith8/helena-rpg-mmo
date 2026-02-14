@@ -27,11 +27,16 @@ namespace Helerion.Game
         private ApiClient _api;
         private Helerion.Services.GpsLocationService _locationService;
         private bool _originSet;
+        private float _lastPositionPatchTime;
 
         public CharacterData PlayerCharacter { get; private set; }
         public List<InventoryEntry> Inventory { get; private set; } = new List<InventoryEntry>();
         public List<ItemData> Items { get; private set; } = new List<ItemData>();
         public List<AbilityData> Abilities { get; private set; } = new List<AbilityData>();
+        public List<AncestryData> Ancestries { get; private set; } = new List<AncestryData>();
+        public List<BackgroundData> Backgrounds { get; private set; } = new List<BackgroundData>();
+        public List<ClassData> Classes { get; private set; } = new List<ClassData>();
+        public List<SkillData> Skills { get; private set; } = new List<SkillData>();
         public bool HasCharacter => PlayerCharacter != null;
         public bool IsReady { get; private set; }
 
@@ -92,8 +97,14 @@ namespace Helerion.Game
                 while (!done) yield return null;
             }
 
+            // If no character: character creation UI will be shown; do not create a demo character.
+
             _api.GetItems(list => { if (list != null) Items.AddRange(list); }, _ => { });
             _api.GetAbilities(list => { if (list != null) Abilities.AddRange(list); }, _ => { });
+            _api.GetAncestries(list => { if (list != null) Ancestries.AddRange(list); }, _ => { });
+            _api.GetBackgrounds(list => { if (list != null) Backgrounds.AddRange(list); }, _ => { });
+            _api.GetClasses(list => { if (list != null) Classes.AddRange(list); }, _ => { });
+            _api.GetSkills(list => { if (list != null) Skills.AddRange(list); }, _ => { });
             IsReady = true;
         }
 
@@ -135,7 +146,11 @@ namespace Helerion.Game
             if (PlayerCharacter == null) return;
             PlayerCharacter.latitude = lat;
             PlayerCharacter.longitude = lng;
-            _api.PatchCharacter(PlayerCharacter.id, PlayerCharacter, () => { }, err => Debug.LogWarning(err));
+            if (PlayerCharacter.id > 0 && Time.time - _lastPositionPatchTime >= 2f)
+            {
+                _lastPositionPatchTime = Time.time;
+                _api.PatchCharacter(PlayerCharacter.id, PlayerCharacter, () => { }, err => Debug.LogWarning(err));
+            }
         }
 
         public ApiClient Api => _api;

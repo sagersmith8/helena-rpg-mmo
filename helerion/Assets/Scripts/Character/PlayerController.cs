@@ -18,13 +18,16 @@ namespace Helerion.Character
 
         private void Update()
         {
-            if (GameManager.Instance?.worldOrigin == null || !GameManager.Instance.HasCharacter) return;
+            if (GameManager.Instance?.worldOrigin == null) return;
+            // Move from GPS even without a backend character (demo mode)
+            if (!GameManager.Instance.HasCharacter) return;
 
             float lat = GameManager.Instance.LocationService?.Latitude ?? 0f;
             float lng = GameManager.Instance.LocationService?.Longitude ?? 0f;
             _targetPos = GameManager.Instance.worldOrigin.LatLngToWorld(lat, lng);
 
             transform.position = Vector3.Lerp(transform.position, _targetPos, smoothSpeed * Time.deltaTime);
+            GameManager.Instance.UpdatePlayerPosition(lat, lng);
 
             if (animator != null)
             {

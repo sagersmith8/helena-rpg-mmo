@@ -78,7 +78,30 @@ We’ll use a **Capsule** first so you can test without Mixamo. You can replace 
 2. **Add Component** → **Enemy Spawner (Script)**.
 3. In the Inspector, find **Enemy Prefab**. Drag the **Enemy** prefab from the Project (from the Prefabs folder) into that slot.
 
-### 2.8 Save the scene
+### 2.8 Character creation UI (when no character is loaded)
+
+If no character is loaded from the backend, the game shows a **character creation** screen. Use **one** of the two options below.
+
+**Option A – UI Toolkit (use this if you only see “UI Document” under UI)**
+
+1. In the Hierarchy, **right‑click** → **UI Toolkit** → **UI Document**. A new object appears (often named “UI Document”).
+2. Select it. In the **Inspector** you’ll see a **UI Document** component.
+3. **Panel Settings**: If the field is empty, create an asset: in the **Project** window **right‑click** → **Create** → **UI Toolkit** → **Panel Settings**. Assign this asset to the **Panel Settings** slot.
+4. **Source Asset**: Drag the **CharacterCreation** UXML from `Assets/UI/CharacterCreation.uxml` into the **Source Asset** field. (If you don’t have that file, it’s in the repo under `helerion/Assets/UI/`.)
+5. **Add Component** → in the search box type **Helerion** or **Character Creation** → choose **Character Creation UI Toolkit** (it appears under **Helerion** in the menu). You can leave its **UI Document** field empty; it will use the UIDocument on the same GameObject.  
+   **If the script doesn’t appear:** check the **Console** for red errors (e.g. missing **UI Toolkit** package). In **Window → Package Manager**, install **UI Toolkit** if it’s not already there.
+6. **Sort Order** (on the UI Document component): set to a positive number (e.g. **10**) so the creation panel draws above the game view.
+
+At runtime the panel is shown only when **GameManager** has no character; after the user enters a name, selects ancestry/background/class, and taps **Create Character**, the game continues with that character.
+
+**Option B – Legacy Canvas (use this if you have “Canvas” under UI)**
+
+If your menu shows **GameObject** → **UI** → **Canvas** (the older UI system):
+
+1. Hierarchy → **right‑click** → **UI** → **Canvas**. Rename it to **CharacterCreationCanvas**.
+2. Add **Character Creation UI (Script)** to the Canvas, then add a **Panel** under the Canvas and under that: **Input Field** (name), three **Dropdown**s (ancestry, background, class), **Button** (Create), and optional **Text** for status and stats. Assign all of them in the Inspector to the script’s fields. (See the script header in `CharacterCreationUI.cs` for the exact field names.)
+
+### 2.9 Save the scene
 
 1. **File → Save As**. Save into `Assets/Scenes/` as **Main** (Unity will add the `.unity` extension).
 2. **File → Build Settings**. Click **Add Open Scenes** so **Main** is in the build list.
@@ -202,6 +225,13 @@ Save the scene and the project before building.
 - [ ] **Main** scene is in **Build Settings** (Scenes In Build list).
 - [ ] On device you allowed **location** for the app.
 
+### 5.5 What to expect on device (character creation)
+
+- **No character from backend?** The game shows a **character creation** screen (name, ancestry, background, class). After you tap **Create**, the character is saved to the backend and the game continues with GPS movement and enemy spawns. You can also create a character in the Helena app and use the same backend; the game will load that character if its ID is saved.
+- **Character is white / no skin:** With a Mixamo (or other) character, the model may have no materials or shaders that don’t show on mobile. In Unity: select the character’s mesh → **Materials** → assign a material with a **Albedo / Base Map** texture. On Android, use **Mobile/Diffuse** or a mobile-friendly shader.
+- **No terrain / empty world:** Terrain and map tiles are not implemented yet. The world is flat; player and enemies use GPS-derived positions. Adding ground or OSM terrain is a possible next step.
+- **Character doesn’t move when I move:** Ensure the app has **location permission**. The player is driven by GPS; if location never updates, the character stays put.
+
 ---
 
 ## Troubleshooting
@@ -213,7 +243,7 @@ Save the scene and the project before building.
   In the Editor there’s no real GPS. The player position is driven by mock location. You can change mock lat/lng in `GpsLocationService` (see script) or set **WorldOrigin**’s origin and move the player in the scene for testing.
 
 - **Enemies don’t spawn**  
-  Check that **EnemySpawner** has the **Enemy** prefab assigned, and that **GameManager** has a **World Origin** assigned. The spawner also needs **GameManager.Instance.HasCharacter** – so you need to have created a character (via the Helena app or API) and have its ID saved, or the game won’t spawn enemies. For a quick test you can temporarily give the game a fake character ID in code if you’re not using the backend yet.
+  Check that **EnemySpawner** has the **Enemy** prefab assigned, and that **GameManager** has a **World Origin** assigned. The spawner only runs when **GameManager.Instance.HasCharacter** is true – so create a character using the in-game character creation screen (name + ancestry + background + class, then Create), or create one in the Helena app and ensure the backend is reachable so the game can load it.
 
 - **Animations don’t play**  
   Make sure the Animator Controller has **parameters** named exactly **Move** (bool), **Attack** (trigger), **Hit** (trigger). Our **CharacterAnimator** script uses those names.
