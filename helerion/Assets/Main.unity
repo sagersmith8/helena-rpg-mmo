@@ -575,9 +575,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0642f2e35f8dd42b2802a67045a7bdcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Helerion.Character.PlayerController
-  animator: {fileID: 0}
+  animator: {fileID: 1516516956}
   smoothSpeed: 5
   movingThreshold: 0.03
+  targetMoveThreshold: 0.005
 --- !u!114 &1516516958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -704,6 +705,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   offset: {x: 0, y: 2, z: -4}
+  useLocalOffset: 1
   smoothSpeed: 5
   lookAtTarget: 1
 --- !u!1 &2145208675
