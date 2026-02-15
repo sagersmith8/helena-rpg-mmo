@@ -1,0 +1,40 @@
+name,description,type,image,updated,notes
+Climbing,"The ability to scale walls, cliffs, trees, and other vertical surfaces. ",athletic,defensive-wall.png,,?
+Swimming,"The skill of moving through water with strength, speed, and control. ",athletic,water-splash.png,,?
+Stamina,"Represents the body’s endurance, energy, and resilience. It governs how much effort you can exert before exhaustion sets in and determines how quickly you recover after strenuous activity.",athletic,despair.png,x,?
+Defence,"The skill of withstanding blows and reducing harm. Proficiency improves reflexes, body resilience, and available equipment allowing you to absorb impacts that would cripple others.",combat,shield.png,,level to unlock new armor classes
+Melee,"The art of close-quarters combat, using fists, blades, clubs, and other hand-held weapons.",combat,swordman.png,,level to unlock new melee weapon classes and attacks
+Ranged,The skill of striking foes from afar with precision and control.,combat,bowman.png,,level to unlock new ranged weapon classes and attacks
+Engineering,"The skill of designing and constructing mechanisms, structures, and tools with precision.",crafting,gears.png,,?
+Mining,"Extract stone, ore, and precious metals from the earth with efficiency.",crafting,mining.png,,able to mine new tiers of ore
+Smithing,"The skill of shaping metal through heat and hammer, forging weapons, armor, and tools.",crafting,sword-smithing.png,,level to smelt new tiers of ore/weapons
+Logging,The skill of felling trees and processing timber.,crafting,axe-in-stump.png,,level to unlock new tiers of trees
+Cooking,"The skill of preparing meals that restore, sustain, or enhance the body and mind.",crafting,camp-cooking-pot.png,x,cook new foods
+Carpentry,"The skill of shaping wood into structures, furniture, and tools with precision and strength.",crafting,hammer-nails.png,,"make and furnish house, make bows, fishing poles"
+Crafting,"The skill of creating tools, items, and useful objects from raw materials with skill and ingenuity.",crafting,emerald-necklace.png,x,"jewelry, deconstructing other items, home decorations"
+Leatherworking,The skill of creating leather armor ,crafting,animal-hide.png,x,craft med armor
+Tailor,The skill of creating light armor and clothing,crafting,sewing-needle.png,,craft light armor
+Summoning,"The skill of calling creatures, spirits, or constructs to aid the caster in battle or tasks.",magic,magic-lamp.png,,summon creatures and spirits
+Illusion,"The skill of creating deceptive images, sounds, or sensations to mislead and manipulate perception.",magic,glowing-hands.png,,?
+Enchanting,"The skill of imbuing objects with magical properties, enhancing weapons, armor, and tools.",magic,rune-sword.png,x,enchant weapons and armors by infusing mana to have special effects
+Divination,"The skill of perceiving hidden truths, predicting events, or uncovering secrets through magical insight.",magic,crystal-ball.png,x,?
+Elemental,"The skill of harnessing the forces of nature, such as fire, ice, lightning, and earth, to strike or protect.",magic,frostfire.png,x,elemental attacks
+Healing,"The skill of restoring health, curing injuries, and alleviating ailments through knowledge, magic, or care.",magic,heart-plus.png,,healing
+Alchemy,"The skill of creating potions, elixirs, and magical substances by combining ingredients with precision and knowledge.",magic,standing-potion.png,,create potions and poisons 
+Faith,"The skill of channeling devotion and belief to inspire, protect, or call upon higher powers.",magic,holy-symbol.png,,"have a bunch of fake religions. only one works for faith skills; bolster attacks and healing, give self/allies buffs"
+Intimidation,"The skill of using presence, voice, and demeanor to instill fear or compel obedience in others.",social,pyromaniac.png,x,?
+Linguistics,"The skill of understanding, translating, and interpreting languages, scripts, and symbols.",social,scroll-quill.png,x,?
+Investigation,"The skill of examining clues, gathering evidence, and deducing hidden truths with careful observation.",social,magnifying-glass.png,,"find traps, hidden items, improve gathering?"
+Bartering,"The skill of negotiating trades, persuading others, and obtaining favorable deals through clever exchange.",social,crown-coin.png,,"improve prices, maybe need to level before you can open a shop"
+Lore,"The skill of recalling knowledge about history, legends, creatures, and the world’s hidden truths.",social,open-book.png,,can discover things about true religion.  have a lot of different manuscripts on stuff
+Sneak,"The skill of moving quietly and remaining unnoticed, avoiding detection by enemies or observers.",stealth,hooded-figure.png,,remain undetected for sneak attacks
+Lockpicking,The skill of manipulating locks and mechanisms to gain access without force or detection.,stealth,locked-chest.png,,maybe have instances that can be unlocks? chests?
+Traps,"The skill of detecting, avoiding, and disabling mechanical or magical traps.",stealth,box-trap.png,,set traps for enemies
+Pickpocket,The skill of stealthily removing items from others without being noticed.,stealth,snatch.png,x,steal from npcs?
+Animal Handling,"The skill of understanding, calming, training, and directing animals through patience and knowledge.",survival,dragon-head.png,,"taming animals, have pets, animal fight companions"
+Riding,"The skill of controlling and maneuvering mounts with balance, timing, and confidence.",survival,horse-head.png,,ride animals??? drive machines? does this have a place in our game??
+Tracking,"The skill of following creatures, people, or beasts by interpreting signs, footprints, and environmental clues.",survival,deer-track.png,x,should this be combined with hunting? track animals and monsters to uncover them
+Foraging,"The skill of finding edible plants, herbs, and other useful resources in the wild.",survival,herbs-bundle.png,,find and identify plants
+Fishing,"The skill of catching fish and other aquatic creatures using patience, technique, and knowledge of waterways.",survival,fishing-pole.png,x,fishing; does google know rivers?
+Hunting,"The skill of stalking and capturing or killing animals for food, materials, or sport.",survival,wolf-trap.png,x,hunt animals; certain monster drops can be harvested
+Farming,"The skill of cultivating crops and raising animals to produce food, herbs, and other resources efficiently.",survival,wheat.png,,farmin!

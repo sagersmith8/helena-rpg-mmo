@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e59e15a240a84e6fbb38c71ebe9734e, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::Helerion.Config.GameConfig
-  apiBaseUrl: http:/192.168.8.215:3000
+  apiBaseUrl: http://192.168.8.215:3000
   osrmBaseUrl: https://router.project-osrm.org
   metersPerUnit: 1
   worldScale: 1

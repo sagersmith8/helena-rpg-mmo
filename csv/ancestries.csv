@@ -1,0 +1,4 @@
+name,description,bonus_speed,bonus_health,bonus_mana,base_size,bonus_strength,bonus_dexterity,bonus_intelligence,bonus_charima,bonus_wisom,bonus_constitution,image
+Human,"Adaptable and ambitious, huAdaptable and ambitious, humans are versatile.",2,2,0,medium,3,1,1,3,1,2,visored-helm.png
+Elf,Graceful and attuned to magic and nature.,5,0,2,medium,0,2,2,1,2,0,elf-helmet.png
+Goblin,"Small, cunning, and quick-witted.",-3,-1,0,small,-1,3,0,0,1,-1,goblin.png

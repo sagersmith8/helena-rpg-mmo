@@ -1,0 +1,78 @@
+name,description,weight,image,bonus_damage,bonus_damage_chance,type,equipment_slot,tree,repairable,durability,gold_value,mana,notes,armor_class,armor_slots
+Ragged Tunic,A holey shirt held together by threads.,0.3,shirt.png,0,0,armor,chest,,FALSE,15,6,0,,1,0
+Ragged Pants,Pants worn thin with age.,0.5,trousers-copy.png,0,0,armor,legs,,FALSE,16,5,0,,1,0
+Ragged Foot Wrappings,Frayed cloth that can be wrapped around your feet for the most basic protection.,0.1,boots.png,0,0,armor,feet,,FALSE,9,3,0,,1,0
+Ragged Hand Wrappings,Frayed cloth that can be wrapped around your hands for the most basic protection.,0.1,hand.png,0,0,armor,hands,,FALSE,10,2,0,,1,0
+Ragged Hat,Frayed cloth that can be wrapped around your head for the most basic protection.,0.1,hood.png,0,0,armor,head,,FALSE,11,1,0,,1,0
+Cloth Shirt,"Simple, rough-spun fabric stitched together for modesty rather than protection. It offers little defense against blades or claws, but at least keeps the chill off.",0.5,shirt.png,0,0,armor,chest,,TRUE,30,65,3,,1,1
+Cloth Pants,"Plain trousers made from coarse fabric. They cover your legs, but will provide little protection.",0.6,trousers-copy.png,0,0,armor,legs,,TRUE,30,55,4,,1,1
+Cloth Skirt,"Plain skirt made from coarse fabric. It cover your legs, but will provide little protection.",0.6,trousers-copy.png,0,0,armor,legs,,TRUE,30,55,4,,1,1
+Cloth Shoes,"Soft-soled shoes stitched from scraps of leather and cloth. They provide comfort for walking, but almost no protection.",0.3,boots.png,0,0,armor,feet,,TRUE,30,45,2,,1,1
+Cloth Gloves,"Thin gloves that keep your hands clean, though not safe. They wear out quickly with hard work.",0.2,hand.png,0,0,armor,hands,,TRUE,30,40,1,,1,1
+Cloth Hat,"A simple cap, woven more for shade than safety. Offers no defense, but adds a bit of character.",0.2,hood.png,0,0,armor,head,,TRUE,30,35,1,,1,1
+Courtier’s Doublet,"Finely tailored, with silken lining and ornate trim. Offers little protection but man does it look good.",1,shirt.png,0,0,armor,chest,,TRUE,75,300,5,,1,2
+Silken Trousers ,"Smooth and shimmering, delicate but luxurious.",0.5,trousers-copy.png,0,0,armor,legs,,TRUE,75,200,5,,1,2
+Silk Skirt,"Smooth and shimmering, delicate but luxurious.",0.5,trousers-copy.png,0,0,armor,legs,,TRUE,75,200,5,,1,2
+Opera Gloves,Silken gloves more for show than practicality.,0.1,hand.png,0,0,armor,hands,,TRUE,75,175,2,,1,2
+Gilded Slippers,"Soft shoes with golden thread, too fine for travel.",0.3,boots.png,0,0,armor,feet,,TRUE,75,150,1,,1,2
+Embroidered Hat,A feathered cap.,0.2,hood.png,0,0,armor,head,,TRUE,75,100,1,,1,2
+"Wooden ""Shield""","A ""shield"" salvaged from part of a table or wall.",3,broken-shield.png,0,0,armor,offhand,,FALSE,15,15,0,,1,0
+Small Buckler,A small round wooden shield.,5,shield.png,0,0,armor,offhand,,TRUE,50,100,2,,1,1
+Tower Shield,"A large shield to cover full body. Not reinforced, so easily broken, but better than nothing.",10,shield.png,0,0,armor,offhand,,TRUE,75,200,4,,1,2
+Primative Stone Shield,"A rough slab of stone lashed to a wooden frame with rawhide. Heavy and unwieldy, but capable of deflecting blows through sheer mass",30,shield.png,0,0,armor,offhand,,TRUE,40,100,1,,2,0
+Stone Shield,"A carefully shaped slab of stone fitted into a sturdy wooden frame. Though still heavy, its smoother surface and balanced construction make it far more reliable in battle.",22,shield.png,0,0,armor,offhand,,TRUE,100,250,2,,2,1
+Dwarven Stone Shield,"Hewn from dense granite and etched with runic patterns, this shield is a masterpiece of dwarven masonry. Perfectly balanced despite its bulk, it offers near-impenetrable defense while channeling the resilience of the mountain itself.",18,shield.png,0,0,armor,offhand,,TRUE,125,500,3,,2,2
+Minor Healing Potion,Recover a small amount of health.,0.1,potion-ball.png,0,0,consumable,,,FALSE,0,500,5,health 10,0,0
+Healing Potion,Recover some health.,0.1,potion-ball.png,0,0,consumable,,,FALSE,0,1000,10,health 25,0,0
+Major Healing Potion,Recover a good amount of health.,0.1,potion-ball.png,0,0,consumable,,,FALSE,0,5000,20,health 50,0,0
+Rock ,Just a regular rock.,1,rock-copy.png,0,0,resource,,,FALSE,0,1,0,,0,0
+Stick,A small branch.,1,tree-branch.png,0,0,resource,,,FALSE,0,1,1,,0,0
+Cloth,A piece of cloth that can be used to craft clothing.,0.1,cloak.png,0,0,resource,,,FALSE,0,25,1,,0,0
+Bone,,1,,0,0,resource,,,FALSE,0,3,2,,0,0
+Broken Wood Dagger,Basically a broken stick. I wouldn't use this to stab a vampire if it was the last stick on earth.,0.4,plain-dagger.png,1,10,weapon,either_hand,dagger,FALSE,15,10,0,,0,0
+Wooden Dagger,Wooden dagger (really just a shiv; deals splinter damage).,0.8,plain-dagger.png,1,40,weapon,either_hand,dagger,TRUE,30,55,2,,0,0
+Ornate Wooden Dagger,"A finely crafted dagger of polished hardwood, its handle etched with delicate patterns. Though still only wood, its elegance makes it more art piece than battlefield weapon.",1,plain-dagger.png,1,90,weapon,either_hand,dagger,TRUE,75,95,3,,0,0
+Primative Stone Dagger,"A jagged shard of flint tied to a stick with sinew. Crude, brittle, and uneven, but dangerous in desperate hands.",1.7,plain-dagger.png,2,10,weapon,either_hand,dagger,TRUE,40,55,1,,0,0
+Stone Dagger,"A chipped and shaped blade of obsidian, set into a wood hilt.",1.5,plain-dagger.png,2,40,weapon,either_hand,dagger,TRUE,100,200,2,,0,0
+Dwarven Stone Dagger,"Carved from flawless obsidian and engraved with runes, this blade gleams like dark glass. Perfectly weighted and honed to a razor’s edge.",1.1,plain-dagger.png,2,90,weapon,either_hand,dagger,TRUE,125,300,3,,0,0
+Crude Bronze Dagger,"A hastily cast weapon with uneven edges, more tool than blade.",1.2,plain-dagger.png,3,10,weapon,either_hand,dagger,TRUE,200,350,2,,0,0
+Refined Bronze Dagger,"Balanced and sharpened through repeated hammering, the bronze gleams with a well-polished edge.",1,plain-dagger.png,3,40,weapon,either_hand,dagger,TRUE,250,500,3,,0,0
+Exquisite Bronze Dagger,"Expertly crafted with patterned inlays and a keen edge, the weapon seems almost golden in the light.",0.9,plain-dagger.png,3,90,weapon,either_hand,dagger,TRUE,300,750,4,,0,0
+Rusty Iron Dagger,"A poorly cared-for iron blade, pitted and streaked with rust. Its edge is blunt, and it feels unwieldy in hand, but it can still pierce flesh in desperate situations.",1.4,plain-dagger.png,4,10,weapon,either_hand,dagger,TRUE,100,200,3,,0,0
+Honed Iron Dagger,"Edges sharpened and polished, smoother and more precise than a crude blade",1.2,plain-dagger.png,4,40,weapon,either_hand,dagger,TRUE,300,800,4,,0,0
+Tempered Iron Dagger,"Carefully forged and heat-treated, this dagger is balanced and resilient. Its edge holds better than common iron, and it delivers reliable, deadly strikes.",1.1,plain-dagger.png,4,90,weapon,either_hand,dagger,TRUE,400,1000,5,,0,0
+Rough Steel Dagger,"A sturdy blade of basic steel, roughly forged and showing hammer marks. Harder than iron, but still unpolished and slightly unbalanced.",1.1,plain-dagger.png,5,10,weapon,either_hand,dagger,TRUE,500,1100,4,,0,0
+Fine Steel Dagger,"Well-forged and balanced, the steel gleams with a polished edge. Reliable and deadly, it can pierce most armor with skillful strikes.",0.9,plain-dagger.png,5,40,weapon,either_hand,dagger,TRUE,550,1300,5,,0,0
+Damascus Steel Dagger,"A masterpiece of smithing, perfectly balanced with flowing dark-and-light steel patterns. Its edge remains razor-sharp through countless battles, and it feels almost alive in the hand.",0.75,plain-dagger.png,5,90,weapon,either_hand,dagger,TRUE,750,1500,6,,0,0
+Tarnished Silver Dagger,"Once gleaming, this dagger’s blade is now dulled with patches of black tarnish. Its edge is soft compared to steel, but it still bites true against unnatural foes.",1,plain-dagger.png,4,10,weapon,either_hand,dagger,TRUE,300,750,5,"good against supernatural, maybe repairs to polished silver dagger",0,0
+Polished Silver Dagger,"A polished blade of pure silver, smooth and elegant. Though softer than steel, it shines with a brilliance that makes it stand out in any armory.",0.9,plain-dagger.png,4,40,weapon,either_hand,dagger,TRUE,350,1500,6,,0,0
+Royal Silver Dagger,"A masterfully crafted silver blade with gold inlay and a jewel-set hilt. Though delicate in form, it carries both beauty and deadly purpose.",0.8,plain-dagger.png,4,90,weapon,either_hand,dagger,TRUE,400,2000,7,,0,0
+Simple Mithril Dagger,"Forged from shimmering silver-blue metal, this blade is impossibly light yet stronger than steel. Its edge cuts cleanly with little resistance.",0.5,plain-dagger.png,6,10,weapon,either_hand,dagger,TRUE,600,5000,10,"speed bonus? also extra light, gives off light??",0,0
+Elven Mithril Dagger,"Slim and elegant, engraved with flowing runes that glow faintly under moonlight. The balance is flawless, allowing",0.35,plain-dagger.png,6,40,weapon,either_hand,dagger,TRUE,700,7500,12,,0,0
+Mythical Mithril Dagger,"A legendary weapon of near-weightless metal, sharp enough to split armor and stone as if they were cloth. It gleams with an otherworldly radiance.",0.2,plain-dagger.png,6,90,weapon,either_hand,dagger,TRUE,1000,10000,15,,0,0
+Adamantine Shard Dagger,"A small, brutally heavy dagger forged from raw adamant. Crude but nearly unbreakable.",1.7,plain-dagger.png,7,10,weapon,either_hand,dagger,TRUE,5000,50000,6,xtra hard,0,0
+Forged Adamant Dagger,"A perfectly tempered adamant blade, its surface reflecting a dull, indigo sheen. Balanced despite its heft, it cuts with unstoppable force.",1.5,plain-dagger.png,7,40,weapon,either_hand,dagger,TRUE,10000,100000,7,,0,0
+Eternal Adamant Dagger,"Said to be indestructible, this dagger is a flawless embodiment of adamant’s power. Its edge cannot be dulled, its form cannot be bent, and it bears an aura of permanence.",1.4,plain-dagger.png,7,90,weapon,either_hand,dagger,TRUE,1000000,1000000,8,,0,0
+Dragon Fang,"A dagger fashioned from the sharpened fang of a fallen dragon. Rough and primal, but stronger than Mithril and still humming with dormant power.",1.2,plain-dagger.png,8,10,weapon,either_hand,dagger,TRUE,700,500000,25,fire attack?,0,0
+Drakonium Dagger,"Forged from the fossilized bones of dragons long extinct, this blade carries the weight of forgotten ages. Pale and ridged like bone, it gleams with a faint inner glow.",1.1,plain-dagger.png,8,40,weapon,either_hand,dagger,TRUE,1000,750000,20,,0,0
+Wyrmblood Dagger,"A dagger born from the marrow of an elder dragon, its veins pulsing with crimson light. The blade burns faintly to the touch, resonating with primal fury.",1,plain-dagger.png,8,90,weapon,either_hand,dagger,TRUE,1200,1000000,30,,0,0
+Ancient Orichalcum Dagger,Recovered from lost ruins. It carries the wisdom and magic of a bygone age.,0.9,plain-dagger.png,9,50,weapon,either_hand,dagger,TRUE,2000,5000000,40,random effects maybe?,0,0
+Arcane Orichalcum Dagger,"Forged from the rarest metal over countless hours, this dagger is imbued with potent spells. Each strike can unleash unpredictable effects",0.8,plain-dagger.png,9,90,weapon,either_hand,dagger,TRUE,3000,15000000,50,,0,0
+Poison,"A vile substance that seeps into wounds or drink, slowly sapping strength and vitality from its victim.",0.1,poison-bottle.png,0,0%,consumable,,poison,FALSE,0,750,-1,health -10,0,0
+Piece of Leather,,,,,,,,,,,,,,,
+Hide,,,,,,,,,,,,,,,
+Pine Log,"A light, resinous log with a fresh forest scent, easy to cut and shape but not the most durable.",,,,,,,,,,,,,,
+Oak Log,,,,,,,,,,,,,,,
+Cedar Log,,,,,,,,,,,,,,,
+Maple Log,,,,,,,,,,,,,,,
+Walnut Log,,,,,,,,,,,,,,,
+Yew Log,,,,,,,,,,,,,,,
+Mahogany Log,,,,,,,,,,,,,,,
+Zebrawood Log,,,,,,,,,,,,,,,
+Purpleheart Log,,,,,,,,,,,,,,,
+Ebony Log,,,,,,,,,,,,,,,
+Moonwood Log,,,,,,,,,,,,,,,
+Blackvein Log,,,,,,,,,,,,,,,
+Celestrea Log,,,,,,,,,,,,,,,
+Worldroot Log,,,,,,,,,,,,,,,
+Healing Poison,would be funny to have ability to make potions that effects cancel each other out,,,,,,,,,,,,,,
