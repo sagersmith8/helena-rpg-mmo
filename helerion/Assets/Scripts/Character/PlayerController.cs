@@ -19,17 +19,18 @@ namespace Helerion.Character
         [Tooltip("How fast the character rotates to face movement/heading. Lower = less twitchy.")]
         public float rotationSpeed = 1.5f;
         [Tooltip("Only sample GPS/compass this often (seconds). Higher = less jitter, character idles properly when still.")]
-        public float locationPollInterval = 0.5f;
+        public float locationPollInterval = 1f;
+        [Tooltip("When we get a new GPS sample, blend target this much toward it (0-1). Lower = smoother, less reaction to jitter.")]
+        public float targetSmoothFactor = 0.2f;
         [Header("Walk animation (hysteresis so steps can finish)")]
-        [Tooltip("Start walking when distance to target is above this (or target moved more). Higher = less sensitive.")]
-        public float walkThreshold = 0.1f;
+        [Tooltip("Start walking when distance to target is above this (or smoothed target moved more). Higher = less sensitive.")]
+        public float walkThreshold = 0.25f;
         [Tooltip("Only go idle when distance is below this AND target barely moved. Keep below walkThreshold.")]
-        public float idleThreshold = 0.03f;
+        public float idleThreshold = 0.08f;
         [Tooltip("Once walking, stay in walk for at least this many seconds so a step can play.")]
         public float minWalkDuration = 0.5f;
 
         private Vector3 _targetPos;
-        private Vector3 _prevTargetPos;
         private bool _hasPrevTarget;
         private bool _isInWalkState;
         private float _walkStateUntil;
@@ -56,10 +57,17 @@ namespace Helerion.Character
                 float lat = GameManager.Instance.LocationService?.Latitude ?? 0f;
                 float lng = GameManager.Instance.LocationService?.Longitude ?? 0f;
                 Vector3 newTarget = GameManager.Instance.worldOrigin.LatLngToWorld(lat, lng);
-                targetMoved = _hasPrevTarget ? Vector3.Distance(newTarget, _targetPos) : 0f;
+                Vector3 oldTarget = _targetPos;
+                // Smooth target toward new sample so GPS jitter doesn't keep moving the goal (stops circle-walking when still)
+                if (!_hasPrevTarget)
+                    _targetPos = newTarget;
+                else
+                {
+                    float blend = Mathf.Clamp01(targetSmoothFactor);
+                    _targetPos = Vector3.Lerp(_targetPos, newTarget, blend);
+                }
+                targetMoved = _hasPrevTarget ? Vector3.Distance(_targetPos, oldTarget) : 0f;
                 _hasPrevTarget = true;
-                _prevTargetPos = _targetPos;
-                _targetPos = newTarget;
                 GameManager.Instance.UpdatePlayerPosition(lat, lng);
                 float h = GameManager.Instance.LocationService?.Heading ?? -1f;
                 if (h >= 0f) { _lastHeading = h; _hasLastHeading = true; }
@@ -68,8 +76,10 @@ namespace Helerion.Character
             transform.position = Vector3.Lerp(transform.position, _targetPos, smoothSpeed * Time.deltaTime);
 
             float distToTarget = Vector3.Distance(transform.position, _targetPos);
-            bool wouldBeMoving = distToTarget > walkThreshold || targetMoved > (walkThreshold * 0.5f);
-            bool wouldBeIdle = distToTarget < idleThreshold && targetMoved < (idleThreshold * 0.5f);
+            float moveThresh = walkThreshold * 0.5f;
+            float idleThresh = idleThreshold * 0.5f;
+            bool wouldBeMoving = distToTarget > walkThreshold || targetMoved > moveThresh;
+            bool wouldBeIdle = distToTarget < idleThreshold && targetMoved < idleThresh;
 
             if (wouldBeMoving)
             {
