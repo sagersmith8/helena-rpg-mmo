@@ -110,11 +110,12 @@ namespace Helerion.World
 
                     string url = tileServerUrl.Replace("{z}", tileZoom.ToString()).Replace("{x}", tx.ToString()).Replace("{y}", ty.ToString());
                     var req = UnityWebRequestTexture.GetTexture(url);
-                    req.SetRequestHeader("User-Agent", "Helerion/1.0 (Unity location game)");
+                    req.SetRequestHeader("User-Agent", "HelerionRPG/1.0 (Unity; location-based game; learn more: github.com)");
                     yield return req.SendWebRequest();
 
                     if (req.result != UnityWebRequest.Result.Success)
                     {
+                        UnityEngine.Debug.LogWarning($"[MapGround] Tile {tx},{ty} failed: {req.responseCode} {req.error}");
                         req.Dispose();
                         continue;
                     }
@@ -131,7 +132,8 @@ namespace Helerion.World
                     quad.transform.localScale = new Vector3(tileWorldWidth, tileWorldHeight, 1f);
 
                     var rend = quad.GetComponent<Renderer>();
-                    var mat = new Material(Shader.Find("Unlit/Texture"));
+                    Shader shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Standard");
+                    var mat = new Material(shader);
                     mat.mainTexture = tex;
                     rend.sharedMaterial = mat;
                 }

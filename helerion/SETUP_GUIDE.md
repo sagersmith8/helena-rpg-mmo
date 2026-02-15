@@ -110,6 +110,20 @@ If no character is loaded from the backend, the game shows a **character creatio
 
 At runtime the panel is shown only when **GameManager** has no character; after the user enters a name, selects ancestry/background/class, and taps **Create Character**, the game continues with that character.
 
+### 2.8a Location HUD (lat, lng, heading at bottom)
+
+Shows your GPS coordinates and orientation (heading in degrees) at the bottom of the screen when you have a character:
+
+1. Hierarchy → **right‑click** → **UI Toolkit** → **UI Document**. Rename to **LocationHud** (or keep name).
+2. **Panel Settings**: use the same asset as character creation (or a new one). **Source Asset**: assign **LocationHud.uxml** from `Assets/UI/LocationHud.uxml`.
+3. **Sort Order**: set **lower** than character creation (e.g. **5**) so the HUD sits under it. The HUD only shows when you have a character.
+4. **Add Component** → **Helerion** → **Location HUD**.
+
+**Location on device:**  
+- **Use high accuracy (fine location), not low accuracy only.** In **Edit → Project Settings → Player** → Android (or your platform), if you see a **Location** or **Permissions** option, choose **Fine** / **High accuracy** so the game gets real GPS for the map and movement. Low accuracy often doesn’t give a prompt and is too coarse for walking.  
+- The game **requests location permission at runtime** on Android, so the system **“Allow location?”** prompt should appear when the game starts. If you don’t see it, check **Settings → Apps → [your app] → Permissions** and enable Location, then restart the app.  
+- On **iOS**, set **Location When In Use Usage Description** under **Player Settings → iOS → Other Settings**.
+
 ### 2.9 Save the scene
 
 1. **File → Save As**. Save into `Assets/Scenes/` as **Main** (Unity will add the `.unity` extension).
