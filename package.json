@@ -43,6 +43,7 @@
   "scripts": {
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "gen-types": "npx swagger2openapi http://localhost:3000/ -o ./openapi3.json && npx @openapitools/openapi-generator-cli generate -i ./openapi3.json -g typescript-fetch -o ./api"
+    "gen-types": "npx swagger2openapi http://localhost:3000/ -o ./openapi3.json && npx @openapitools/openapi-generator-cli generate -i ./openapi3.json -g typescript-fetch -o ./api",
+    "seed": "node scripts/seed-from-csv.js"
   }
 }

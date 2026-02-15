@@ -1,0 +1,3 @@
+name,description,bonus_speed,bonus_health,bonus_mana,bonus_strength,bonus_dexterity,bonus_intelligence,bonus_charisma,bonus_wisdom,bonus_constitution,image
+Bard,"Weavers of song and story, inspiring allies and confusing foes.",0,0,2,0,1,2,3,1,0,lyre.png
+Druid,"Guardians of the wild, attuned to balance and nature’s fury",0,3,0,3,2,0,1,0,1,oak.png
