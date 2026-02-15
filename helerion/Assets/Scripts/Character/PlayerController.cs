@@ -23,16 +23,18 @@ namespace Helerion.Character
         [Tooltip("When we get a new GPS sample, blend target this much toward it (0-1). Lower = smoother, stops circle-walk when still.")]
         public float targetSmoothFactor = 0.08f;
         [Header("Walk animation (hysteresis so steps can finish)")]
-        [Tooltip("Start walking when distance to target is above this. Higher = need to be farther before walk starts.")]
-        public float walkThreshold = 0.5f;
-        [Tooltip("Only go idle when distance is below this AND target barely moved. Keep below walkThreshold.")]
-        public float idleThreshold = 0.15f;
-        [Tooltip("Smoothed target must move at least this much in one poll to count as movement. Stops jitter from triggering walk.")]
-        public float minTargetMoveToWalk = 0.2f;
-        [Tooltip("Require this many polls in a row with movement before starting walk. Stops single jitter from triggering.")]
-        public int consecutivePollsToStartWalk = 2;
+        [Tooltip("Start walking when distance to target is above this. Lower = walk triggers on smaller steps.")]
+        public float walkThreshold = 0.15f;
+        [Tooltip("Only go idle when distance is below this. Keep below walkThreshold.")]
+        public float idleThreshold = 0.08f;
         [Tooltip("Once walking, stay in walk for at least this many seconds so a step can play.")]
         public float minWalkDuration = 0.5f;
+        [Tooltip("When idle, don't rotate (stops compass drift from spinning). When moving we still face movement direction.")]
+        public bool rotateWhenIdle = false;
+        [Tooltip("When already idle, if new GPS is within this of us, snap target to us (stops circle-walk).")]
+        public float stillRadius = 0.25f;
+        [Tooltip("When new GPS is this far from us, treat as real movement and move target there so character follows.")]
+        public float movedThreshold = 0.4f;
 
         private Vector3 _targetPos;
         private bool _hasPrevTarget;
@@ -41,7 +43,6 @@ namespace Helerion.Character
         private float _lastLocationPollTime = -999f;
         private float _lastHeading;
         private bool _hasLastHeading;
-        private int _consecutivePollsWithMovement;
 
         private void Awake()
         {
@@ -53,7 +54,6 @@ namespace Helerion.Character
             if (GameManager.Instance?.worldOrigin == null) return;
             if (!GameManager.Instance.HasCharacter) return;
 
-            float targetMoved = 0f;
             bool justPolled = (Time.time - _lastLocationPollTime) >= locationPollInterval;
 
             if (justPolled)
@@ -62,21 +62,21 @@ namespace Helerion.Character
                 float lat = GameManager.Instance.LocationService?.Latitude ?? 0f;
                 float lng = GameManager.Instance.LocationService?.Longitude ?? 0f;
                 Vector3 newTarget = GameManager.Instance.worldOrigin.LatLngToWorld(lat, lng);
-                Vector3 oldTarget = _targetPos;
-                // Smooth target toward new sample so GPS jitter doesn't keep moving the goal (stops circle-walking when still)
+                float distToNew = Vector3.Distance(transform.position, newTarget);
+                float distToCurrentTarget = Vector3.Distance(transform.position, _targetPos);
+                bool alreadyIdle = _hasPrevTarget && distToCurrentTarget < idleThreshold;
                 if (!_hasPrevTarget)
                     _targetPos = newTarget;
+                else if (distToNew >= movedThreshold)
+                    _targetPos = newTarget;
+                else if (alreadyIdle && distToNew <= stillRadius)
+                    _targetPos = transform.position;
                 else
                 {
                     float blend = Mathf.Clamp01(targetSmoothFactor);
                     _targetPos = Vector3.Lerp(_targetPos, newTarget, blend);
                 }
-                targetMoved = _hasPrevTarget ? Vector3.Distance(_targetPos, oldTarget) : 0f;
                 _hasPrevTarget = true;
-                if (targetMoved >= minTargetMoveToWalk)
-                    _consecutivePollsWithMovement++;
-                else
-                    _consecutivePollsWithMovement = 0;
                 GameManager.Instance.UpdatePlayerPosition(lat, lng);
                 float h = GameManager.Instance.LocationService?.Heading ?? -1f;
                 if (h >= 0f) { _lastHeading = h; _hasLastHeading = true; }
@@ -84,10 +84,10 @@ namespace Helerion.Character
 
             transform.position = Vector3.Lerp(transform.position, _targetPos, smoothSpeed * Time.deltaTime);
 
+            // Use ONLY distance to (smoothed) target for walk/idle – ignore targetMoved so jitter never triggers walk
             float distToTarget = Vector3.Distance(transform.position, _targetPos);
-            bool targetMovedEnough = targetMoved >= minTargetMoveToWalk && _consecutivePollsWithMovement >= consecutivePollsToStartWalk;
-            bool wouldBeMoving = distToTarget > walkThreshold || targetMovedEnough;
-            bool wouldBeIdle = distToTarget < idleThreshold && targetMoved < minTargetMoveToWalk;
+            bool wouldBeMoving = distToTarget > walkThreshold;
+            bool wouldBeIdle = distToTarget < idleThreshold;
 
             if (wouldBeMoving)
             {
@@ -108,11 +108,12 @@ namespace Helerion.Character
                 Quaternion targetRot = Quaternion.LookRotation(moveDir.normalized);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotSpeed);
             }
-            else if (_hasLastHeading)
+            else if (rotateWhenIdle && _hasLastHeading)
             {
                 Quaternion targetRot = Quaternion.Euler(0f, _lastHeading, 0f);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotSpeed);
             }
+            // When idle and rotateWhenIdle off: don't rotate (stops compass drift spinning)
 
             if (animator != null)
                 animator.SetMoving(actuallyMoving);
