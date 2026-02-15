@@ -196,7 +196,8 @@ You’ll end up with **1 character FBX** and **4 animation FBXs**.
 ### 4.5 Hook up Character Animator script
 
 1. With **Player** selected, find the **Character Animator (Script)** component.
-2. There’s an **Animator** slot. If it’s empty, drag the **same** Player object into it (or the Animator component is on the same GameObject, so it can find it automatically in code – our script uses `GetComponent<Animator>()` if the slot is empty, so it should already work).
+2. There’s an **Animator** slot. If it’s empty, drag **Player** (or the child with the Animator) into the slot. The script also auto-finds an Animator on this object or its children if the slot is empty.
+3. **Player Controller (Script)** has an **Animator** slot for the **Character Animator** component. Leave it empty and the script will auto-find it on the same GameObject, or drag **Player** into that slot in the Inspector.
 
 You’re done. Press **Play** again: the Knight should play Idle, and when the game sets “Move” to true (from movement), it should play Walking. Attack and Hit will play when combat triggers them.
 
@@ -269,7 +270,7 @@ Save the scene and the project before building.
   Check that **EnemySpawner** has the **Enemy** prefab assigned, and that **GameManager** has a **World Origin** assigned. The spawner only runs when **GameManager.Instance.HasCharacter** is true – so create a character using the in-game character creation screen (name + ancestry + background + class, then Create), or create one in the Helena app and ensure the backend is reachable so the game can load it.
 
 - **Animations don’t play**  
-  Make sure the Animator Controller has **parameters** named exactly **Move** (bool), **Attack** (trigger), **Hit** (trigger). Our **CharacterAnimator** script uses those names.
+  Make sure the Animator Controller has **parameters** named exactly **Move** (bool), **Attack** (trigger), **Hit** (trigger). For **Idle → Walking**, uncheck **Has Exit Time** on that transition. The **Player Controller** will auto-find **Character Animator** on the same object if its Animator slot is empty; **Character Animator** will auto-find the **Animator** on the same object or a child.
 
 - **App on phone doesn’t load / “can’t connect”**  
   The phone must reach **Api Base Url**. Use your computer’s IP (e.g. `http://192.168.1.5:3000`), not `localhost`. Ensure phone and computer are on the same Wi‑Fi, and that your backend is listening on `0.0.0.0` (not just `127.0.0.1`) so it accepts connections from the network. On Mac, allow the app (e.g. Docker or your server) in **System Settings → Network → Firewall** if you use one.
