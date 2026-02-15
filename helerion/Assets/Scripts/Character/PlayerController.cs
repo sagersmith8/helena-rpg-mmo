@@ -17,12 +17,12 @@ namespace Helerion.Character
         [Tooltip("How fast the player transform catches up to GPS position.")]
         public float smoothSpeed = 5f;
         [Tooltip("How fast the character rotates to face movement/heading. Lower = less twitchy.")]
-        public float rotationSpeed = 3f;
+        public float rotationSpeed = 1.5f;
         [Header("Walk animation (hysteresis so steps can finish)")]
-        [Tooltip("Start walking when distance to target is above this (or target moved more).")]
-        public float walkThreshold = 0.04f;
+        [Tooltip("Start walking when distance to target is above this (or target moved more). Higher = less sensitive.")]
+        public float walkThreshold = 0.1f;
         [Tooltip("Only go idle when distance is below this AND target barely moved. Keep below walkThreshold.")]
-        public float idleThreshold = 0.015f;
+        public float idleThreshold = 0.03f;
         [Tooltip("Once walking, stay in walk for at least this many seconds so a step can play.")]
         public float minWalkDuration = 0.5f;
 
