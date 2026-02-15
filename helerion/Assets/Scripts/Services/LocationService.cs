@@ -47,7 +47,7 @@ namespace Helerion.Services
                     callbacks.PermissionGranted += _ =>
                     {
                         Input.compass.enabled = true;
-                        Input.location.Start(1f, 1f);
+                        Input.location.Start(0.5f, 0.1f); // 0.5m accuracy, update every 0.1m for responsive walking
                         onSuccess?.Invoke();
                     };
                     callbacks.PermissionDenied += _ => onError?.Invoke("Location denied. Enable it in device Settings → Apps → this app.");
@@ -65,7 +65,7 @@ namespace Helerion.Services
                 return;
             }
             Input.compass.enabled = true;
-            Input.location.Start(1f, 1f);
+            Input.location.Start(0.5f, 0.1f); // 0.5m accuracy, update every 0.1m for responsive walking
             onSuccess?.Invoke();
         }
 
