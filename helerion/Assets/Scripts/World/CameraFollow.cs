@@ -15,8 +15,10 @@ namespace Helerion.World
         public Transform target;
 
         [Header("Position")]
-        [Tooltip("Offset from target (e.g. above and behind for 3rd person, or (0,50,0) for top-down).")]
-        public Vector3 offset = new Vector3(0f, 40f, 0f);
+        [Tooltip("Offset from target. With useLocalOffset, this is in the character's space (e.g. (0,40,-15) = above and behind).")]
+        public Vector3 offset = new Vector3(0f, 40f, -15f);
+        [Tooltip("If true, offset is applied in target's local space so camera stays behind when the character rotates (e.g. with heading).")]
+        public bool useLocalOffset = true;
         [Tooltip("Smooth follow speed. 0 = instant.")]
         public float smoothSpeed = 5f;
 
@@ -37,7 +39,8 @@ namespace Helerion.World
         {
             if (target == null) return;
 
-            Vector3 desired = target.position + offset;
+            Vector3 worldOffset = useLocalOffset ? target.rotation * offset : offset;
+            Vector3 desired = target.position + worldOffset;
             transform.position = smoothSpeed <= 0f
                 ? desired
                 : Vector3.Lerp(transform.position, desired, smoothSpeed * Time.deltaTime);

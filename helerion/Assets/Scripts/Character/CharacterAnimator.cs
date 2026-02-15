@@ -17,6 +17,7 @@ namespace Helerion.Character
         private void Awake()
         {
             if (animator == null) animator = GetComponent<Animator>();
+            if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
         public void SetMoving(bool moving)
