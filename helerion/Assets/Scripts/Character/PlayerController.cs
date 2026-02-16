@@ -16,24 +16,20 @@ namespace Helerion.Character
         [Header("Movement")]
         [Tooltip("How fast the player transform catches up to GPS position.")]
         public float smoothSpeed = 5f;
-        [Tooltip("How fast the character rotates to face movement/heading. Lower = less twitchy.")]
-        public float rotationSpeed = 1.5f;
-        [Tooltip("Only sample GPS/compass this often (seconds). Higher = less jitter, character idles properly when still.")]
+        [Tooltip("Only sample GPS this often (seconds). Higher = less jitter.")]
         public float locationPollInterval = 1.5f;
-        [Tooltip("When we get a new GPS sample, blend target this much toward it (0-1). Lower = smoother, stops circle-walk when still.")]
+        [Tooltip("When we get a new GPS sample, blend target this much toward it (0-1). Lower = smoother.")]
         public float targetSmoothFactor = 0.08f;
         [Header("Walk animation (hysteresis so steps can finish)")]
-        [Tooltip("Start walking when distance to target is above this. Lower = walk triggers on smaller steps.")]
+        [Tooltip("Start walking when distance to target is above this.")]
         public float walkThreshold = 0.15f;
         [Tooltip("Only go idle when distance is below this. Keep below walkThreshold.")]
         public float idleThreshold = 0.08f;
         [Tooltip("Once walking, stay in walk for at least this many seconds so a step can play.")]
         public float minWalkDuration = 0.5f;
-        [Tooltip("When idle, don't rotate (stops compass drift from spinning). When moving we still face movement direction.")]
-        public bool rotateWhenIdle = false;
-        [Tooltip("When already idle, if new GPS is within this of us, snap target to us (stops circle-walk).")]
+        [Tooltip("When already idle, if new GPS is within this of us, snap target to us.")]
         public float stillRadius = 0.25f;
-        [Tooltip("When new GPS is this far from us, treat as real movement and move target there so character follows.")]
+        [Tooltip("When new GPS is this far from us, treat as real movement and move target there.")]
         public float movedThreshold = 0.4f;
 
         private Vector3 _targetPos;
@@ -41,8 +37,6 @@ namespace Helerion.Character
         private bool _isInWalkState;
         private float _walkStateUntil;
         private float _lastLocationPollTime = -999f;
-        private float _lastHeading;
-        private bool _hasLastHeading;
 
         private void Awake()
         {
@@ -78,8 +72,6 @@ namespace Helerion.Character
                 }
                 _hasPrevTarget = true;
                 GameManager.Instance.UpdatePlayerPosition(lat, lng);
-                float h = GameManager.Instance.LocationService?.Heading ?? -1f;
-                if (h >= 0f) { _lastHeading = h; _hasLastHeading = true; }
             }
 
             transform.position = Vector3.Lerp(transform.position, _targetPos, smoothSpeed * Time.deltaTime);
@@ -99,21 +91,7 @@ namespace Helerion.Character
 
             bool actuallyMoving = _isInWalkState;
 
-            Vector3 moveDir = _targetPos - transform.position;
-            moveDir.y = 0f;
-            float rotSpeed = rotationSpeed * Time.deltaTime;
-
-            if (actuallyMoving && moveDir.sqrMagnitude > 0.0001f)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(moveDir.normalized);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotSpeed);
-            }
-            else if (rotateWhenIdle && _hasLastHeading)
-            {
-                Quaternion targetRot = Quaternion.Euler(0f, _lastHeading, 0f);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotSpeed);
-            }
-            // When idle and rotateWhenIdle off: don't rotate (stops compass drift spinning)
+            // Rotation is not applied here – use touch (e.g. a separate script) to rotate the character.
 
             if (animator != null)
                 animator.SetMoving(actuallyMoving);

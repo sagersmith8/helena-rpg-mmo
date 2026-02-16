@@ -173,7 +173,7 @@ namespace Helerion.Game
             if (PlayerCharacter.id > 0 && Time.time - _lastPositionPatchTime >= 2f)
             {
                 _lastPositionPatchTime = Time.time;
-                _api.PatchCharacter(PlayerCharacter.id, PlayerCharacter, () => { }, err => Debug.LogWarning(err));
+                _api.PatchCharacterPosition(PlayerCharacter.id, lat, lng, () => { }, err => Debug.LogWarning(err));
             }
         }
 

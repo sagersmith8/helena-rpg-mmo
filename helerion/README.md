@@ -62,12 +62,43 @@
 
 ---
 
+## Procedural map and 3D props
+
+The map can use **procedural tiles** (terrain texture + optional 3D props). To add **trees and rocks** as actual models:
+
+1. **Add the decorator**  
+   On the same GameObject as **MapGround** (or a child), add the **Procedural Map Decorator** component.
+
+2. **Get prefabs** (no code required – drag into the Inspector):
+   - **Trees**: One or more low-poly tree prefabs. Examples: Unity Asset Store “Low Poly Trees”, “Polygon - Nature Pack”, or free “Nature Starter Kit”. Prefer **pivot at the base** so they sit on the ground.
+   - **Rocks**: Low-poly rock or boulder prefabs. Examples: “Low Poly Rocks”, “Polygon - Rock”. Keep poly count low; the decorator places many instances.
+
+3. **Assign in Inspector**  
+   Set **Tree Prefab** and/or **Rock Prefab** on the Procedural Map Decorator. Leave one null if you only want trees or only rocks.
+
+4. **Match MapGround**  
+   Keep **Tile Zoom** and **Tiles Per Side** the same as on MapGround so props align with the painted terrain. **Placement Grid Res** (default 8) controls density; lower = fewer props.
+
+Placement uses the same procedural noise as the tile texture, so 3D trees appear in forest areas and rocks on rocky terrain. Roads stay texture-only (no road meshes).
+
+---
+
+## Build checklist (device)
+
+- **WorldOrigin** – The scene must contain a GameObject with the **WorldOrigin** script (so map tiles and decorations can run). MapGround and Procedural Map Decorator will use `WorldOrigin.Instance` or find it in the scene if not assigned.
+- **Map tiles** – Default is **Procedural with OSM fallback**: the game tries to load real-world OSM tiles (roads) first; if the request fails (e.g. no network), it falls back to procedural terrain. For real roads you need network access on device.
+- **Trees and rocks** – On the object that has **Procedural Map Decorator**, assign **Tree Prefab** and **Rock Prefab** in the Inspector. If either is left empty, nothing is placed. Prefabs must be in the project and referenced from the scene so they’re included in the build.
+- **Spinning character** – If the character spins on device, keep **Rotate When Idle** off on **PlayerController**. The default **Min Rotate Angle Deg** (3°) avoids tiny rotations from GPS/compass jitter.
+- **Camera and map rotation** – **Camera Follow** uses world-space offset by default (camera does not orbit with the character; only the character rotates). To let the player rotate the map with touch: create an empty **MapPivot**, make **MapGround** a child of it, add **Map Rotator** to MapPivot; then drag horizontally to spin the map.
+
+---
+
 ## Project layout
 
 - **Assets/Scripts/Config** – `GameConfig` (API URL, OSRM, world scale).
 - **Assets/Scripts/API** – `ApiClient`, DTOs (Character, Item, Inventory, Ability) for PostgREST.
 - **Assets/Scripts/Services** – `LocationService` (GPS / mock), `OsrmService` (road routes).
-- **Assets/Scripts/World** – `WorldOrigin` (lat/lng ↔ world XZ).
+- **Assets/Scripts/World** – `WorldOrigin` (lat/lng ↔ world XZ), `MapGround`, `MapRotator`, `ProceduralMapDecorator`, `CameraFollow`.
 - **Assets/Scripts/Game** – `GameManager` (load/save character, inventory, state).
 - **Assets/Scripts/Character** – `PlayerController`, `CharacterAnimator`.
 - **Assets/Scripts/Enemies** – `EnemyController`, `EnemySpawner`.

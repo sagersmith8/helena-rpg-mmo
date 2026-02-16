@@ -15,10 +15,10 @@ namespace Helerion.World
         public Transform target;
 
         [Header("Position")]
-        [Tooltip("Offset from target. With useLocalOffset, this is in the character's space (e.g. (0,40,-15) = above and behind).")]
+        [Tooltip("Offset from target in world space (e.g. (0,40,-15) = above and behind = south of player).")]
         public Vector3 offset = new Vector3(0f, 40f, -15f);
-        [Tooltip("If true, offset is applied in target's local space so camera stays behind when the character rotates (e.g. with heading).")]
-        public bool useLocalOffset = true;
+        [Tooltip("If true, camera orbits with character rotation. If false, camera stays fixed (only character rotates); use with map rotation for best feel.")]
+        public bool useLocalOffset = false;
         [Tooltip("Smooth follow speed. 0 = instant.")]
         public float smoothSpeed = 5f;
 
@@ -33,6 +33,8 @@ namespace Helerion.World
                 var go = GameObject.FindGameObjectWithTag("Player");
                 if (go != null) target = go.transform;
             }
+            if (target != null && transform.IsChildOf(target))
+                Debug.LogWarning("[CameraFollow] Camera is a child of the Player - it will orbit when the character rotates. Move the Camera to the scene root (not under Player).");
         }
 
         private void LateUpdate()

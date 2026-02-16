@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:VisualElement name="status-root" style="position: absolute; left: 8; top: 8; flex-direction: column; padding: 6; background-color: rgba(0, 0, 0, 180); min-width: 200;">
+    <ui:Label name="status-map" text="Map: —" style="font-size: 11; color: rgba(220, 220, 220, 255);" />
+    <ui:Label name="status-decorator" text="Decorator: —" style="font-size: 11; color: rgba(220, 220, 220, 255);" />
+    <ui:Label name="status-origin" text="Origin: —" style="font-size: 11; color: rgba(220, 220, 220, 255);" />
+    <ui:Label name="status-extra" text="" style="font-size: 11; color: rgba(200, 200, 255, 255);" />
+    
+  </ui:VisualElement>
+</ui:UXML>

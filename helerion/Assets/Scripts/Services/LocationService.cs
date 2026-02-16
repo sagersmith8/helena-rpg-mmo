@@ -61,8 +61,13 @@ namespace Helerion.Services
 #endif
             if (Input.location.isEnabledByUser == false)
             {
+#if UNITY_EDITOR
+                onSuccess?.Invoke();
+                return;
+#else
                 onError?.Invoke("Location not enabled. Allow location when the system prompt appears.");
                 return;
+#endif
             }
             Input.compass.enabled = true;
             Input.location.Start(0.5f, 0.1f); // 0.5m accuracy, update every 0.1m for responsive walking

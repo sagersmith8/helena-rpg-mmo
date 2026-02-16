@@ -42,7 +42,16 @@ namespace Helerion.API
 
         public void PatchCharacter(int id, CharacterData c, Action onSuccess, Action<string> onError)
         {
-            Patch("characters", "id", "eq", id.ToString(), JsonUtility.ToJson(c), onSuccess, onError);
+            Patch("characters", $"id=eq.{id}", null, null, JsonUtility.ToJson(c), onSuccess, onError);
+        }
+
+        /// <summary>
+        /// PATCH only latitude/longitude so backends without armor_class etc. don't error.
+        /// </summary>
+        public void PatchCharacterPosition(int id, double latitude, double longitude, Action onSuccess, Action<string> onError)
+        {
+            var body = new CharacterPositionPatch { latitude = latitude, longitude = longitude };
+            Patch("characters", $"id=eq.{id}", null, null, JsonUtility.ToJson(body), onSuccess, onError);
         }
 
         public void GetInventory(int characterId, Action<InventoryEntry[]> onSuccess, Action<string> onError)
@@ -212,6 +221,8 @@ namespace Helerion.API
         }
 
         [Serializable] private class Wrapper<T> { public T characters; public T inventory; }
+
+        [Serializable] private class CharacterPositionPatch { public double latitude; public double longitude; }
     }
 
     public static class JsonHelper

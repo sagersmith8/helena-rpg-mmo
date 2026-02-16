@@ -117,12 +117,23 @@ Shows your GPS coordinates and orientation (heading in degrees) at the bottom of
 1. Hierarchy → **right‑click** → **UI Toolkit** → **UI Document**. Rename to **LocationHud** (or keep name).
 2. **Panel Settings**: use the same asset as character creation (or a new one). **Source Asset**: assign **LocationHud.uxml** from `Assets/UI/LocationHud.uxml`.
 3. **Sort Order**: set **lower** than character creation (e.g. **5**) so the HUD sits under it. The HUD only shows when you have a character.
-4. **Add Component** → **Helerion** → **Location HUD**.
+4. **Add Component** → search for **Location** or open **Helerion** in the list → add **Location HUD** (script: `LocationHudUI`).
 
 **Location on device:**  
 - **Use high accuracy (fine location), not low accuracy only.** In **Edit → Project Settings → Player** → Android (or your platform), if you see a **Location** or **Permissions** option, choose **Fine** / **High accuracy** so the game gets real GPS for the map and movement. Low accuracy often doesn’t give a prompt and is too coarse for walking.  
 - The game **requests location permission at runtime** on Android, so the system **“Allow location?”** prompt should appear when the game starts. If you don’t see it, check **Settings → Apps → [your app] → Permissions** and enable Location, then restart the app.  
 - On **iOS**, set **Location When In Use Usage Description** under **Player Settings → iOS → Other Settings**.
+
+### 2.8b Status HUD (debug on device)
+
+Shows map/decorator status in the **top-left** so you can debug on a phone without logs (e.g. "Tiles: 25", "Trees: 42, Rocks: 18", or "Map: no WorldOrigin"):
+
+1. Hierarchy → **right‑click** → **UI Toolkit** → **UI Document**. Rename to **StatusHud**.
+2. **Panel Settings**: same as character creation (or a new one). **Source Asset**: **StatusHud.uxml** from `Assets/UI/StatusHud.uxml`.
+3. **Sort Order**: set **higher** than other UI (e.g. **20**) so the status panel is on top.
+4. **Add Component** → search **Status** or **Helerion** → **Status HUD** (script: `StatusHudUI`).
+
+Leave it in the scene when building for device so you can see why the map might show only green (e.g. "Tiles: 0", "Decorator: assign tree/rock prefabs").
 
 ### 2.9 Save the scene
 

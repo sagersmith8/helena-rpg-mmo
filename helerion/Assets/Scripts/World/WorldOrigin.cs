@@ -1,5 +1,6 @@
 using UnityEngine;
 using Helerion.Config;
+using Helerion.Game;
 
 namespace Helerion.World
 {
@@ -26,6 +27,7 @@ namespace Helerion.World
             Instance = this;
             if (metersPerDegreeLng <= 0)
                 metersPerDegreeLng = metersPerDegreeLat * Mathf.Cos((float)originLatitude * Mathf.Deg2Rad);
+            GameplayStatus.WorldOriginStatus = $"Origin: {originLatitude:F4}, {originLongitude:F4}";
         }
 
         private void OnDestroy()
