@@ -64,7 +64,17 @@ namespace Helerion.Game
         {
             _locationService.Start(null, err => Debug.LogWarning("Location: " + err));
 
-            // Wait for location (or use mock)
+            // Wait for location (or use mock). In Editor, location never runs so set mock immediately so map/decorator get a center.
+#if UNITY_EDITOR
+            if (!_locationService.IsRunning)
+            {
+                float lat = _locationService.Latitude;
+                float lng = _locationService.Longitude;
+                if (worldOrigin != null) { worldOrigin.SetOrigin(lat, lng); _originSet = true; }
+                GameplayStatus.OriginSetByGame = true;
+                GameplayStatus.WorldOriginStatus = $"Origin: {lat:F4}, {lng:F4} (mock)";
+            }
+#endif
             float t = 0;
             while (!_locationService.IsRunning && t < 5f)
             {
@@ -72,7 +82,7 @@ namespace Helerion.Game
                 yield return null;
             }
 
-            if (!_originSet && (_locationService.IsRunning || true))
+            if (!_originSet)
             {
                 float lat = _locationService.Latitude;
                 float lng = _locationService.Longitude;
@@ -81,6 +91,8 @@ namespace Helerion.Game
                     worldOrigin.SetOrigin(lat, lng);
                     _originSet = true;
                 }
+                GameplayStatus.OriginSetByGame = true;
+                GameplayStatus.WorldOriginStatus = $"Origin: {lat:F4}, {lng:F4}";
             }
 
             if (_savedCharacterId > 0)

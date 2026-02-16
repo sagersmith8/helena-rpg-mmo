@@ -49,6 +49,8 @@ namespace Helerion.World
         [Header("Timing")]
         [Tooltip("Seconds to wait before placing (should match MapGround tile load delay).")]
         public float placeDelay = 2f;
+        [Tooltip("Max seconds to wait for GameManager to set world origin (GPS or mock). Stops rocks being placed at default SF then player at real location.")]
+        public float waitForOriginMax = 12f;
         [Tooltip("Y offset for placed objects (use if prefab pivot is at center so trees sit on ground).")]
         public float groundOffsetY = 0f;
 
@@ -76,7 +78,16 @@ namespace Helerion.World
         {
             if (placeDelay > 0f)
                 yield return new WaitForSeconds(placeDelay);
-            PlaceDecorations();
+            float waited = 0f;
+            while (!GameplayStatus.OriginSetByGame && waited < waitForOriginMax)
+            {
+                waited += Time.deltaTime;
+                yield return null;
+            }
+            if (!GameplayStatus.OriginSetByGame)
+                GameplayStatus.DecoratorStatus = "Decorator: origin not set (timeout)";
+            else
+                PlaceDecorations();
         }
 
         private void PlaceDecorations()
@@ -135,9 +146,9 @@ namespace Helerion.World
                 }
             }
 
-            GameplayStatus.DecoratorStatus = $"Trees: {trees}, Rocks: {rocks}";
+            GameplayStatus.DecoratorStatus = $"Trees: {trees}, Rocks: {rocks} @ {lat:F4},{lng:F4}";
             if (trees == 0 && rocks == 0 && (treePrefab != null || rockPrefab != null))
-                UnityEngine.Debug.Log("[ProceduralMapDecorator] Placed 0 trees/rocks. Try: increase Placement Grid Res, or lower placement thresholds in ProceduralTileGenerator.");
+                UnityEngine.Debug.Log("[ProceduralMapDecorator] Placed 0 trees/rocks at " + lat + "," + lng + ". Tiles vary by location; try higher Placement Grid Res or lower thresholds in ProceduralTileGenerator.");
         }
     }
 }
