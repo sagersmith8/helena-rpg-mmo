@@ -55,6 +55,8 @@ namespace Helerion.World
         [Header("Timing")]
         [Tooltip("Seconds to wait before loading tiles (so GPS/origin is set).")]
         public float tileLoadDelay = 2f;
+        [Tooltip("Max seconds to wait for GameManager to set world origin. Same idea as ProceduralMapDecorator.")]
+        public float waitForOriginMax = 12f;
 
         private void Awake()
         {
@@ -86,7 +88,16 @@ namespace Helerion.World
         {
             if (tileLoadDelay > 0f)
                 yield return new WaitForSeconds(tileLoadDelay);
-            yield return LoadTilesWhenReady();
+            float waited = 0f;
+            while (!GameplayStatus.OriginSetByGame && waited < waitForOriginMax)
+            {
+                waited += Time.deltaTime;
+                yield return null;
+            }
+            if (!GameplayStatus.OriginSetByGame)
+                GameplayStatus.MapStatus = "Map: origin not set (timeout)";
+            else
+                yield return LoadTilesWhenReady();
         }
 
         private void CreateGround()
