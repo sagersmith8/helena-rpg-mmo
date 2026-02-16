@@ -226,6 +226,7 @@ GameObject:
   m_Component:
   - component: {fileID: 163879924}
   - component: {fileID: 163879923}
+  - component: {fileID: 163879925}
   m_Layer: 0
   m_Name: MapGround
   m_TagString: Untagged
@@ -245,13 +246,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e5a674d4d853428391b399ec7246dbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldOrigin: {fileID: 0}
+  worldOrigin: {fileID: 599564673}
   groundSize: 500
   groundMaterial: {fileID: 0}
   showMapTiles: 1
-  tileZoom: 17
-  tilesPerSide: 5
+  mapTileStyle: 2
+  tileZoom: 18
+  tilesPerSide: 9
   tileServerUrl: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+  proceduralTileResolution: 512
   tileLoadDelay: 2
 --- !u!4 &163879924
 Transform:
@@ -261,13 +264,35 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163879922}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 669177240}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &163879925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 163879922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32d1c77eaceba4194adbcaee7cb11e1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldOrigin: {fileID: 599564673}
+  treePrefab: {fileID: 185286, guid: 8ed1fa325ca228645ad26dd6eff14768, type: 3}
+  rockPrefab: {fileID: 119512, guid: 5578b82f17c954843901e8b68ca21dcc, type: 3}
+  tileZoom: 18
+  tilesPerSide: 9
+  placementGridRes: 16
+  randomRotationY: 360
+  scaleRange: {x: 0.85, y: 1.15}
+  placeDelay: 2
+  groundOffsetY: 5
 --- !u!1 &599564672
 GameObject:
   m_ObjectHideFlags: 0
@@ -314,6 +339,54 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &669177238
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669177240}
+  - component: {fileID: 669177239}
+  m_Layer: 0
+  m_Name: MapPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &669177239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669177238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61485e2b2547d490893b501dd4fce43f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sensitivity: 0.15
+  invert: 0
+  deadZonePixels: 2
+--- !u!4 &669177240
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669177238}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 163879924}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &956793789
@@ -370,6 +443,54 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 956793789}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1090692005
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1090692007}
+  - component: {fileID: 1090692006}
+  m_Layer: 5
+  m_Name: StatusHud
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1090692006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1090692005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: c4ef587630dc742b1a86dbfff5a7db71, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 6fbdbb7aa740e4f3cad13a0d76ba4e47, type: 3}
+  m_SortingOrder: 0
+--- !u!4 &1090692007
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1090692005}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -577,8 +698,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Helerion.Character.PlayerController
   animator: {fileID: 1516516956}
   smoothSpeed: 5
-  movingThreshold: 0.03
-  targetMoveThreshold: 0.005
+  locationPollInterval: 0.5
+  targetSmoothFactor: 0.2
+  walkThreshold: 0.04
+  idleThreshold: 0.015
+  minWalkDuration: 0.5
+  stillRadius: 0.4
+  movedThreshold: 0.4
 --- !u!114 &1516516958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -704,7 +830,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  offset: {x: 0, y: 2, z: -4}
+  offset: {x: 0, y: 100, z: -7}
   useLocalOffset: 1
   smoothSpeed: 5
   lookAtTarget: 1
@@ -839,5 +965,6 @@ SceneRoots:
   - {fileID: 6594460441349919817}
   - {fileID: 1516516954}
   - {fileID: 2145208678}
-  - {fileID: 163879924}
   - {fileID: 956793792}
+  - {fileID: 1090692007}
+  - {fileID: 669177240}
