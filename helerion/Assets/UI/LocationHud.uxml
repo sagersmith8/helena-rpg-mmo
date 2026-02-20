@@ -1,7 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-  <ui:VisualElement name="hud-root" style="position: absolute; left: 0; right: 0; bottom: 0; flex-direction: row; padding: 8; background-color: rgba(0, 0, 0, 160); align-items: center; justify-content: space-around;">
-    <ui:Label name="lat-label" text="Lat: —" style="font-size: 12; color: rgba(255, 255, 255, 255);" />
-    <ui:Label name="lng-label" text="Lng: —" style="font-size: 12; color: rgba(255, 255, 255, 255);" />
-    <ui:Label name="heading-label" text="Heading: —" style="font-size: 12; color: rgba(255, 255, 255, 255);" />
-  </ui:VisualElement>
-</ui:UXML>
